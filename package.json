@@ -8,7 +8,7 @@
   "activationCommands": {
     "atom-workspace": "split-diff:getEditors"
   },
-  "repository": "https://github.com/atom/split-diff",
+  "repository": "https://github.com/mupchrch/split-diff",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
