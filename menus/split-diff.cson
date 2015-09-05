@@ -1,0 +1,22 @@
+# See https://atom.io/docs/latest/hacking-atom-package-word-count#menus for more details
+'context-menu':
+  'atom-text-editor': [
+    {
+      'label': 'Get visible editors'
+      'command': 'split-diff:getEditors'
+    }
+  ]
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'split-diff'
+      'submenu': [
+        {
+          'label': 'getEditors'
+          'command': 'split-diff:getEditors'
+        }
+      ]
+    ]
+  }
+]
