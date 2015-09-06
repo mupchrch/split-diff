@@ -7,6 +7,10 @@ module.exports = SplitDiff =
   #splitDiffView: null
   #modalPanel: null
   subscriptions: null
+  editor1: null
+  editor2: null
+  JsDiff: require 'diff'
+  markers: []
 
   activate: (state) ->
     #atom.workspace.observeTextEditors (editor) => console.log editor
@@ -30,7 +34,33 @@ module.exports = SplitDiff =
 
   getEditors: ->
     atom.workspace.observeTextEditors (editor) =>
+      console.log editor
       editorView = atom.views.getView(editor)
       $editorView = $(editorView)
       if $editorView.is ':visible'
-        console.log $editorView
+        if @editor1 == null
+          @editor1 = editor
+          @editor1View = $editorView
+        else if @editor2 == null
+          @editor2 = editor
+          @editor2View = $editorView
+
+    diff = @JsDiff.diffLines(@editor1.getText(), @editor2.getText());
+    console.log diff
+    lineNumber = 0
+    prevSelectionChanged = false;
+    for changeObject in diff
+      if changeObject.added
+        marker = @editor2.markBufferRange([[lineNumber, 0], [lineNumber + changeObject.count, 0]], invalidate: 'never')
+        @editor2.decorateMarker(marker, type: 'line', class: 'line-green')
+        @markers.push(marker)
+        prevSelectionChanged = true
+      else if changeObject.removed
+        marker = @editor1.markBufferRange([[lineNumber, 0], [lineNumber + changeObject.count, 0]], invalidate: 'never')
+        @editor1.decorateMarker(marker, type: 'line', class: 'line-red')
+        @markers.push(marker)
+        prevSelectionChanged = true
+      else
+        prevSelectionChanged = false
+      if !prevSelectionChanged
+        lineNumber = lineNumber + changeObject.count
