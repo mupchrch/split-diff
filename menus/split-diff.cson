@@ -2,8 +2,8 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Get visible editors'
-      'command': 'split-diff:getEditors'
+      'label': 'Toggle split-diff'
+      'command': 'split-diff:toggle'
     }
   ]
 'menu': [
@@ -13,8 +13,8 @@
       'label': 'split-diff'
       'submenu': [
         {
-          'label': 'getEditors'
-          'command': 'split-diff:getEditors'
+          'label': 'Toggle'
+          'command': 'split-diff:toggle'
         }
       ]
     ]

@@ -6,7 +6,7 @@
   "keywords": [
   ],
   "activationCommands": {
-    "atom-workspace": "split-diff:getEditors"
+    "atom-workspace": "split-diff:toggle"
   },
   "repository": "https://github.com/mupchrch/split-diff",
   "license": "MIT",
