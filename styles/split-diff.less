@@ -4,27 +4,11 @@
 // for a full listing of what's available.
 @import "ui-variables";
 
-.split-diff {
-}
-
 atom-text-editor, atom-text-editor::shadow {
-  .line {
-    &.line-green {
-      background-color: @background-color-success;//green;
-    }
-
-    &.line-red {
-      background-color: @background-color-error;//red;
-    }
+  .split-diff-added .region {
+    background-color: @background-color-success;
+  }
+  .split-diff-removed .region {
+    background-color: @background-color-error;
   }
 }
-
-/*atom-text-editor, atom-text-editor::shadow {
-
-  .diff-view-added .region {
-    background-color: green;//@background-color-success;
-  }
-  .diff-view-removed .region {
-    background-color: red;//@background-color-error;
-  }
-}*/
