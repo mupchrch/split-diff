@@ -5,10 +5,13 @@
 @import "ui-variables";
 
 atom-text-editor, atom-text-editor::shadow {
-  .split-diff-added .region {
-    background-color: @background-color-success;
-  }
-  .split-diff-removed .region {
-    background-color: @background-color-error;
+  .line {
+    &.split-diff-added {
+      background-color: @background-color-success;//green;
+    }
+
+    &.split-diff-removed {
+      background-color: @background-color-error;//red;
+    }
   }
 }

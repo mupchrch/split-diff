@@ -44,7 +44,9 @@ module.exports = SplitDiff =
         else if editor2 == null
           editor2 = editor
 
-    #TODO(mike): check if either editor is null
+    if editor1 == null || editor2 == null
+      atom.notifications.addInfo('Split Diff', {detail: 'You must have two panes open.'})
+      return
 
     computedDiff = @SplitDiffCompute.computeDiff(editor1.getText(), editor2.getText())
     console.log computedDiff
