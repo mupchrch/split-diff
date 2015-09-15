@@ -1,11 +1,11 @@
 {CompositeDisposable} = require 'atom'
 {$} = require 'space-pen'
+DiffViewEditor = require './build-lines.js'
 
 
 module.exports = SplitDiff =
   subscriptions: null
   JsDiff: require 'diff'
-  BuildLines: require './build-lines.js'
   SplitDiffCompute: require './split-diff-compute.js'
   markers: []
   isEnabled: false
@@ -69,11 +69,21 @@ module.exports = SplitDiff =
         else if editor2 == null
           editor2 = editor
 
-    linesWithOffsets = @SplitDiffCompute.computeDiff(editor1.getText(), editor2.getText())
-    console.log linesWithOffsets
+    computedDiff = @SplitDiffCompute.computeDiff(editor1.getText(), editor2.getText())
+    console.log computedDiff
+
+    @displayDiff(editor1, editor2, computedDiff)
+
     @isEnabled = true
     console.log 'split-diff enabled'
 
   turnOff: ->
     @isEnabled = false
     console.log 'split-diff disabled'
+
+  displayDiff: (editor1, editor2, computedDiff)->
+    diffViewEditor1 = new DiffViewEditor(editor1)
+    diffViewEditor2 = new DiffViewEditor(editor2)
+
+    diffViewEditor1.setOffsets(computedDiff.oldLineOffsets)
+    diffViewEditor2.setOffsets(computedDiff.newLineOffsets)
