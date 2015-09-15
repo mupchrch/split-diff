@@ -9,6 +9,8 @@ module.exports = SplitDiff =
   SplitDiffCompute: require './split-diff-compute.js'
   markers: []
   isEnabled: false
+  diffViewEditor1: null
+  diffViewEditor2: null
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
@@ -69,6 +71,8 @@ module.exports = SplitDiff =
         else if editor2 == null
           editor2 = editor
 
+    #TODO check if either editor is null
+
     computedDiff = @SplitDiffCompute.computeDiff(editor1.getText(), editor2.getText())
     console.log computedDiff
 
@@ -78,12 +82,29 @@ module.exports = SplitDiff =
     console.log 'split-diff enabled'
 
   turnOff: ->
+    @diffViewEditor1.removeOffsets()
+    @diffViewEditor2.removeOffsets()
+    
+    @removeLineHighlights()
+
+    @diffViewEditor1 = null
+    @diffViewEditor2 = null
     @isEnabled = false
     console.log 'split-diff disabled'
 
   displayDiff: (editor1, editor2, computedDiff)->
-    diffViewEditor1 = new DiffViewEditor(editor1)
-    diffViewEditor2 = new DiffViewEditor(editor2)
+    @diffViewEditor1 = new DiffViewEditor(editor1)
+    @diffViewEditor2 = new DiffViewEditor(editor2)
 
-    diffViewEditor1.setOffsets(computedDiff.oldLineOffsets)
-    diffViewEditor2.setOffsets(computedDiff.newLineOffsets)
+    @diffViewEditor1.setOffsets(computedDiff.oldLineOffsets)
+    @diffViewEditor2.setOffsets(computedDiff.newLineOffsets)
+
+    for removedLine in computedDiff.removedLines
+      marker1 = editor1.markBufferRange([[removedLine, 0], [removedLine + 1, 0]], invalidate: 'never')
+      editor1.decorateMarker(marker1, type: 'line', class: 'line-red')
+      @markers.push(marker1)
+
+    for addedLine in computedDiff.addedLines
+      marker2 = editor2.markBufferRange([[addedLine, 0], [addedLine + 1, 0]], invalidate: 'never')
+      editor2.decorateMarker(marker2, type: 'line', class: 'line-green')
+      @markers.push(marker2)
