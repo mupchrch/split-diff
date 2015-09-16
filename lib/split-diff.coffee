@@ -7,7 +7,7 @@ SyncScroll = require './sync-scroll'
 module.exports = SplitDiff =
   subscriptions: null
   JsDiff: require 'diff'
-  SplitDiffCompute: require './split-diff-compute.js'
+  SplitDiffCompute: require './split-diff-compute'
   isEnabled: false
   diffViewEditor1: null
   diffViewEditor2: null
@@ -18,7 +18,8 @@ module.exports = SplitDiff =
 
     # Register command that finds visible text editors
     @subscriptions.add atom.commands.add 'atom-workspace',
-      'split-diff:toggle': => @toggle()
+      'split-diff:diffPanes': => @turnOn()
+      'split-diff:disable': => @turnOff()
 
   deactivate: ->
     @subscriptions.dispose()
@@ -33,6 +34,9 @@ module.exports = SplitDiff =
       @turnOn()
 
   turnOn: ->
+    if @isEnabled
+      @turnOff()
+      
     editor1 = null
     editor2 = null
     atom.workspace.observeTextEditors (editor) =>
@@ -82,3 +86,6 @@ module.exports = SplitDiff =
 
     @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
     @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
+
+    @diffViewEditor1.scrollToTop()
+    @diffViewEditor2.scrollToTop()

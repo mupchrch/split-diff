@@ -1,7 +1,8 @@
 # See https://atom.io/docs/latest/hacking-atom-package-word-count#menus for more details
 'context-menu':
   'atom-text-editor': [
-    { 'label': 'Toggle split-diff', 'command': 'split-diff:toggle' }
+    { 'label': 'Diff Panes', 'command': 'split-diff:diffPanes' }
+    { 'label': 'Disable split-diff', 'command': 'split-diff:disable' }
   ]
 'menu': [
   {
@@ -9,7 +10,8 @@
     'submenu': [
       'label': 'split-diff'
       'submenu': [
-        { 'label': 'Toggle', 'command': 'split-diff:toggle' }
+        { 'label': 'Diff Panes', 'command': 'split-diff:diffPanes' }
+        { 'label': 'Disable', 'command': 'split-diff:disable' }
       ]
     ]
   }
