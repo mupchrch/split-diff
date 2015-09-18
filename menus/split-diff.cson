@@ -8,7 +8,7 @@
   {
     'label': 'Packages'
     'submenu': [
-      'label': 'split-diff'
+      'label': 'Split Diff'
       'submenu': [
         { 'label': 'Diff Panes', 'command': 'split-diff:diffPanes' }
         { 'label': 'Disable', 'command': 'split-diff:disable' }

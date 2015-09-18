@@ -12,26 +12,18 @@ module.exports = SplitDiff =
   editorSubscriptions: null
 
   activate: (state) ->
-    # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
-    @subscriptions = new CompositeDisposable
-    @editorSubscriptions = new CompositeDisposable
+    @subscriptions = new CompositeDisposable()
 
-    # Register command that finds visible text editors
     @subscriptions.add atom.commands.add 'atom-workspace',
       'split-diff:diffPanes': => @diffPanes()
-      'split-diff:disable': => @clearDiff()
+      'split-diff:disable': => @disable()
 
   deactivate: ->
+    console.log 'deactivate'
     @subscriptions.dispose()
 
   serialize: ->
     #splitDiffViewState: @splitDiffView.serialize()
-
-  toggle: ->
-    if @isEnabled #turn off
-      @turnOff()
-    else #turn on
-      @turnOn()
 
   getVisibleEditors: ->
     editor1 = null
@@ -49,6 +41,7 @@ module.exports = SplitDiff =
     editors =
       editor1: editor1
       editor2: editor2
+
     return editors
 
   diffPanes: ->
@@ -58,50 +51,55 @@ module.exports = SplitDiff =
       atom.notifications.addInfo('Split Diff', {detail: 'You must have two panes open.'})
       return
 
+    @editorSubscriptions = new CompositeDisposable()
     @editorSubscriptions.add editors.editor1.onDidStopChanging =>
       @updateDiff(editors)
     @editorSubscriptions.add editors.editor2.onDidStopChanging =>
       @updateDiff(editors)
     @editorSubscriptions.add editors.editor1.onDidDestroy =>
-      console.log('dest e1')
-      @editorSubscriptions.dispose()
-      @clearDiff()
+      @disable()
     @editorSubscriptions.add editors.editor2.onDidDestroy =>
-      console.log('dest e2')
-      @editorSubscriptions.dispose()
-      @clearDiff()
+      @disable()
 
     @updateDiff(editors)
 
+    atom.notifications.addInfo('Split Diff Enabled')
+    console.log 'split-diff enabled'
+
   updateDiff: (editors) ->
-    if @isEnabled
-      @clearDiff()
+    @clearDiff()
 
     SplitDiffCompute = require './split-diff-compute'
     computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText())
-    console.log computedDiff
-
     @displayDiff(editors, computedDiff)
 
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2)
 
     @isEnabled = true
-    console.log 'split-diff enabled'
+
+  disable: ->
+    @clearDiff()
+    if @isEnabled
+      @editorSubscriptions.dispose()
+      @editorSubscriptions = null
+      @isEnabled = false
+
+    atom.notifications.addInfo('Split Diff Disabled')
+    console.log 'split-diff disabled'
 
   clearDiff: ->
-    @diffViewEditor1.removeLineOffsets()
-    @diffViewEditor1.removeLineHighlights()
+    if @isEnabled
+      @diffViewEditor1.removeLineOffsets()
+      @diffViewEditor1.removeLineHighlights()
 
-    @diffViewEditor2.removeLineOffsets()
-    @diffViewEditor2.removeLineHighlights()
+      @diffViewEditor2.removeLineOffsets()
+      @diffViewEditor2.removeLineHighlights()
 
-    @syncScroll.dispose()
-    @syncScroll = null
+      @syncScroll.dispose()
+      @syncScroll = null
 
-    @diffViewEditor1 = null
-    @diffViewEditor2 = null
-    @isEnabled = false
-    console.log 'split-diff disabled'
+      @diffViewEditor1 = null
+      @diffViewEditor2 = null
 
   displayDiff: (editors, computedDiff) ->
     @diffViewEditor1 = new DiffViewEditor(editors.editor1)
