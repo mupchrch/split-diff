@@ -64,7 +64,6 @@ module.exports = SplitDiff =
     @updateDiff(editors)
 
     atom.notifications.addInfo('Split Diff Enabled')
-    console.log 'split-diff enabled'
 
   updateDiff: (editors) ->
     @clearDiff()
@@ -85,7 +84,6 @@ module.exports = SplitDiff =
       @isEnabled = false
 
     atom.notifications.addInfo('Split Diff Disabled')
-    console.log 'split-diff disabled'
 
   clearDiff: ->
     if @isEnabled
@@ -110,6 +108,3 @@ module.exports = SplitDiff =
 
     @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
     @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
-
-    #@diffViewEditor1.scrollToTop()
-    #@diffViewEditor2.scrollToTop()
