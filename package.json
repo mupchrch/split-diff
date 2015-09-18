@@ -2,7 +2,7 @@
   "name": "split-diff",
   "main": "./lib/split-diff",
   "version": "0.1.0",
-  "description": "A short description of your package",
+  "description": "A split pane diff tool.",
   "keywords": [],
   "activationCommands": {
     "atom-workspace": "split-diff:diffPanes"
