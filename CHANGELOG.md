@@ -1,3 +1,6 @@
+## 0.3.1 - 2015-09-23
+* Fixed package compile errors
+
 ## 0.3.0 - 2015-09-23
 * Fixed scroll sync misalignment upon initial diff
 * Added ability to ignore whitespace
