@@ -9,20 +9,18 @@ module.exports = SplitDiff =
   isEnabled: false
   diffViewEditor1: null
   diffViewEditor2: null
-  editorSubscriptions: null
+  editorSubscriptions: nul
   #TODO(mike): serialize/save ignore whitespace setting
   isWhitespaceIgnored: false
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
 
-    @subscriptions.add atom.commands.add 'atom-workspace',
       'split-diff:diffPanes': => @diffPanes()
       'split-diff:disable': => @disable()
       'split-diff:toggleIgnoreWhitespace': => @toggleIgnoreWhitespace()
 
   deactivate: ->
-    console.log 'deactivate'
     @subscriptions.dispose()
 
   serialize: ->
