@@ -10,6 +10,8 @@ module.exports = SplitDiff =
   diffViewEditor1: null
   diffViewEditor2: null
   editorSubscriptions: null
+  #TODO(mike): serialize/save ignore whitespace setting
+  isWhitespaceIgnored: false
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -17,6 +19,7 @@ module.exports = SplitDiff =
     @subscriptions.add atom.commands.add 'atom-workspace',
       'split-diff:diffPanes': => @diffPanes()
       'split-diff:disable': => @disable()
+      'split-diff:toggleIgnoreWhitespace': => @toggleIgnoreWhitespace()
 
   deactivate: ->
     console.log 'deactivate'
@@ -63,13 +66,15 @@ module.exports = SplitDiff =
 
     @updateDiff(editors)
 
-    atom.notifications.addInfo('Split Diff Enabled')
+    detailMsg = 'Ignore whitespace: ' + @isWhitespaceIgnored
+    atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg})
 
   updateDiff: (editors) ->
     @clearDiff()
 
     SplitDiffCompute = require './split-diff-compute'
-    computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText())
+    computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored)
+
     @displayDiff(editors, computedDiff)
 
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2)
@@ -108,3 +113,7 @@ module.exports = SplitDiff =
 
     @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
     @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
+
+  toggleIgnoreWhitespace: ->
+    @isWhitespaceIgnored = !@isWhitespaceIgnored
+    @diffPanes()

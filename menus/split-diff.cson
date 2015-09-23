@@ -2,6 +2,7 @@
   'atom-text-editor': [
     { 'label': 'Diff Panes', 'command': 'split-diff:diffPanes' }
     { 'label': 'Disable split-diff', 'command': 'split-diff:disable' }
+    { 'label': 'Toggle Ignore Whitespace', 'command': 'split-diff:toggleIgnoreWhitespace' }
   ]
 'menu': [
   {
@@ -11,6 +12,7 @@
       'submenu': [
         { 'label': 'Diff Panes', 'command': 'split-diff:diffPanes' }
         { 'label': 'Disable', 'command': 'split-diff:disable' }
+        { 'label': 'Toggle Ignore Whitespace', 'command': 'split-diff:toggleIgnoreWhitespace' }
       ]
     ]
   }
