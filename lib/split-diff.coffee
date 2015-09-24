@@ -77,7 +77,7 @@ module.exports = SplitDiff =
     @displayDiff(editors, computedDiff)
 
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2)
-    @syncScrollPositions(editors)
+    @syncScroll.syncPositions()
 
     @isEnabled = true
 
@@ -113,13 +113,6 @@ module.exports = SplitDiff =
 
     @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
     @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
-
-  syncScrollPositions: (editors) ->
-    activeTextEditor = atom.workspace.getActiveTextEditor()
-    if activeTextEditor == editors.editor1
-      editors.editor1.emitter.emit 'did-change-scroll-top', editors.editor1.getScrollTop()
-    else if activeTextEditor == editors.editor2
-      editors.editor2.emitter.emit 'did-change-scroll-top', editors.editor2.getScrollTop()
 
   toggleIgnoreWhitespace: ->
     @isWhitespaceIgnored = !@isWhitespaceIgnored
