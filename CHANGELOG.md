@@ -1,3 +1,6 @@
+## 0.3.2 - 2015-09-23
+* Updated README with demonstration gif
+
 ## 0.3.1 - 2015-09-23
 * Fixed package compile errors
 
