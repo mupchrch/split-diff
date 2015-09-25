@@ -3,7 +3,17 @@
   "main": "./lib/split-diff",
   "version": "0.3.2",
   "description": "A split pane diff tool.",
-  "keywords": [],
+  "keywords": [
+    "diff",
+    "split",
+    "compare",
+    "panes",
+    "files",
+    "lines",
+    "code",
+    "difference",
+    "visual"
+  ],
   "activationCommands": {
     "atom-workspace": "split-diff:diffPanes"
   },

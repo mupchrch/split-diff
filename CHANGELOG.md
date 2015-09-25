@@ -1,3 +1,7 @@
+## 0.4.0 - 2015-09-25
+* Added ability to open one or two new panes depending on current amount of panes
+* Added keywords for finding this package easier in atom's package collection
+
 ## 0.3.2 - 2015-09-23
 * Updated README with demonstration gif
 

@@ -1,4 +1,4 @@
-{CompositeDisposable, Emitter} = require 'atom'
+{CompositeDisposable, Emitter, TextEditor, TextBuffer} = require 'atom'
 {$} = require 'space-pen'
 DiffViewEditor = require './build-lines'
 SyncScroll = require './sync-scroll'
@@ -40,6 +40,15 @@ module.exports = SplitDiff =
         else if editor2 == null
           editor2 = editor
 
+    if editor1 == null
+      editor1 = new TextEditor()
+      leftPane = atom.workspace.getActivePane()
+      leftPane.addItem(editor1)
+    if editor2 == null
+      editor2 = new TextEditor()
+      rightPane = atom.workspace.getActivePane().splitRight()
+      rightPane.addItem(editor2)
+
     editors =
       editor1: editor1
       editor2: editor2
@@ -49,9 +58,11 @@ module.exports = SplitDiff =
   diffPanes: ->
     editors = @getVisibleEditors()
 
-    if editors.editor1 == null || editors.editor2 == null
-      atom.notifications.addInfo('Split Diff', {detail: 'You must have two panes open.'})
-      return
+    #if editors.editor1 == null || editors.editor2 == null
+    #  atom.notifications.addInfo('Split Diff', {detail: 'You must have two panes open.'})
+    #  rightPane = atom.workspace.getActivePane().splitRight()
+    #  rightPane.addItem(new TextEditor())
+    #  return
 
     @editorSubscriptions = new CompositeDisposable()
     @editorSubscriptions.add editors.editor1.onDidStopChanging =>
