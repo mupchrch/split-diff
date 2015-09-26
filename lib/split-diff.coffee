@@ -10,7 +10,7 @@ module.exports = SplitDiff =
   diffViewEditor1: null
   diffViewEditor2: null
   editorSubscriptions: null
-  #TODO(mike): serialize/save ignore whitespace setting
+  #TODO(mike): serialize/save ignore whitespace setting?
   isWhitespaceIgnored: false
 
   activate: (state) ->
@@ -25,12 +25,15 @@ module.exports = SplitDiff =
     @subscriptions.dispose()
 
   serialize: ->
-    #splitDiffViewState: @splitDiffView.serialize()
+    # does nothing for now
 
+  # gets two visible editors
+  # auto opens new editors so there are two to diff with
   getVisibleEditors: ->
     editor1 = null
     editor2 = null
 
+    # find visible editors
     atom.workspace.observeTextEditors (editor) =>
       editorView = atom.views.getView(editor)
       $editorView = $(editorView)
@@ -40,6 +43,7 @@ module.exports = SplitDiff =
         else if editor2 == null
           editor2 = editor
 
+    # auto open editor panes so we have two to diff with
     if editor1 == null
       editor1 = new TextEditor()
       leftPane = atom.workspace.getActivePane()
@@ -55,14 +59,10 @@ module.exports = SplitDiff =
 
     return editors
 
+  # called by the command "Diff Panes" to do initial diff
+  # sets up subscriptions for auto diff and disabling when a pane is destroyed
   diffPanes: ->
     editors = @getVisibleEditors()
-
-    #if editors.editor1 == null || editors.editor2 == null
-    #  atom.notifications.addInfo('Split Diff', {detail: 'You must have two panes open.'})
-    #  rightPane = atom.workspace.getActivePane().splitRight()
-    #  rightPane.addItem(new TextEditor())
-    #  return
 
     @editorSubscriptions = new CompositeDisposable()
     @editorSubscriptions.add editors.editor1.onDidStopChanging =>
@@ -79,6 +79,8 @@ module.exports = SplitDiff =
     detailMsg = 'Ignore whitespace: ' + @isWhitespaceIgnored
     atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg})
 
+  # called by both diffPanes and the editor subscription to update the diff
+  # creates the scroll sync
   updateDiff: (editors) ->
     @clearDiff()
 
@@ -92,6 +94,8 @@ module.exports = SplitDiff =
 
     @isEnabled = true
 
+  # called by "Disable" command
+  # removes diff and sync scroll, disposes of subscriptions
   disable: ->
     @clearDiff()
     if @isEnabled
@@ -101,6 +105,7 @@ module.exports = SplitDiff =
 
     atom.notifications.addInfo('Split Diff Disabled')
 
+  # removes diff and sync scroll
   clearDiff: ->
     if @isEnabled
       @diffViewEditor1.removeLineOffsets()
@@ -115,6 +120,7 @@ module.exports = SplitDiff =
       @diffViewEditor1 = null
       @diffViewEditor2 = null
 
+  # displays the diff visually in the editors
   displayDiff: (editors, computedDiff) ->
     @diffViewEditor1 = new DiffViewEditor(editors.editor1)
     @diffViewEditor2 = new DiffViewEditor(editors.editor2)
@@ -125,6 +131,8 @@ module.exports = SplitDiff =
     @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
     @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
 
+  # called by "toggle ignore whitespace" command
+  # toggles ignoring whitespace and refreshes the diff
   toggleIgnoreWhitespace: ->
     @isWhitespaceIgnored = !@isWhitespaceIgnored
     @diffPanes()
