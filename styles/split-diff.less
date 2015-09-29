@@ -1,13 +1,13 @@
-@import "ui-variables";
+@import "syntax-variables";
 
 atom-text-editor, atom-text-editor::shadow {
   .line {
     &.split-diff-added {
-      background-color: fade(@background-color-success, 30%);
+      background-color: fade(@syntax-color-added, 50%);
     }
 
     &.split-diff-removed {
-      background-color: fade(@background-color-error, 30%);
+      background-color: fade(@syntax-color-removed, 50%);
     }
   }
 }
