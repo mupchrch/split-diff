@@ -1,3 +1,6 @@
+## 0.4.2 - 2015-09-30
+* Fixed bug #1 - Uncaught TypeError
+
 ## 0.4.1 - 2015-09-30
 * Updated line highlight colors to use theme syntax colors
 

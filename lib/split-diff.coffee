@@ -6,7 +6,6 @@ SyncScroll = require './sync-scroll'
 
 module.exports = SplitDiff =
   subscriptions: null
-  isEnabled: false
   diffViewEditor1: null
   diffViewEditor2: null
   editorSubscriptions: null
@@ -62,6 +61,8 @@ module.exports = SplitDiff =
   # called by the command "Diff Panes" to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
   diffPanes: ->
+    @disable(false)
+
     editors = @getVisibleEditors()
 
     @editorSubscriptions = new CompositeDisposable()
@@ -70,9 +71,9 @@ module.exports = SplitDiff =
     @editorSubscriptions.add editors.editor2.onDidStopChanging =>
       @updateDiff(editors)
     @editorSubscriptions.add editors.editor1.onDidDestroy =>
-      @disable()
+      @disable(true)
     @editorSubscriptions.add editors.editor2.onDidDestroy =>
-      @disable()
+      @disable(true)
 
     @updateDiff(editors)
 
@@ -92,33 +93,32 @@ module.exports = SplitDiff =
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2)
     @syncScroll.syncPositions()
 
-    @isEnabled = true
-
   # called by "Disable" command
   # removes diff and sync scroll, disposes of subscriptions
-  disable: ->
+  disable: (displayMsg) ->
     @clearDiff()
-    if @isEnabled
+    if @editorSubscriptions
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
-      @isEnabled = false
 
-    atom.notifications.addInfo('Split Diff Disabled')
+    if displayMsg
+      atom.notifications.addInfo('Split Diff Disabled')
 
   # removes diff and sync scroll
   clearDiff: ->
-    if @isEnabled
+    if @diffViewEditor1
       @diffViewEditor1.removeLineOffsets()
       @diffViewEditor1.removeLineHighlights()
+      @diffViewEditor1 = null
 
+    if @diffViewEditor2
       @diffViewEditor2.removeLineOffsets()
       @diffViewEditor2.removeLineHighlights()
+      @diffViewEditor2 = null
 
+    if @syncScroll
       @syncScroll.dispose()
       @syncScroll = null
-
-      @diffViewEditor1 = null
-      @diffViewEditor2 = null
 
   # displays the diff visually in the editors
   displayDiff: (editors, computedDiff) ->
