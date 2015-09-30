@@ -1,3 +1,6 @@
+## 0.4.1 - 2015-09-30
+* Updated line highlight colors to use theme syntax colors
+
 ## 0.4.0 - 2015-09-25
 * Added ability to open one or two new panes depending on current amount of panes
 * Added ability to unfold all lines when displaying diff so that it is properly aligned
