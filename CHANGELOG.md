@@ -1,3 +1,6 @@
+## 0.4.3 - 2015-10-06
+* Added compatibility for minimap plugin
+
 ## 0.4.2 - 2015-09-30
 * Fixed bug #1 - Uncaught TypeError
 
