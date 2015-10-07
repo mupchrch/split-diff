@@ -21,10 +21,11 @@ module.exports = SplitDiff =
       'split-diff:toggleIgnoreWhitespace': => @toggleIgnoreWhitespace()
 
   deactivate: ->
+    @disable()
     @subscriptions.dispose()
 
   serialize: ->
-    # does nothing for now
+    @disable()
 
   # gets two visible editors
   # auto opens new editors so there are two to diff with
@@ -109,11 +110,13 @@ module.exports = SplitDiff =
     if @diffViewEditor1
       @diffViewEditor1.removeLineOffsets()
       @diffViewEditor1.removeLineHighlights()
+      @diffViewEditor1.destroyMarkers()
       @diffViewEditor1 = null
 
     if @diffViewEditor2
       @diffViewEditor2.removeLineOffsets()
       @diffViewEditor2.removeLineHighlights()
+      @diffViewEditor2.destroyMarkers()
       @diffViewEditor2 = null
 
     if @syncScroll

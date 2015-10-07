@@ -1,3 +1,6 @@
+## 0.4.4 - 2015-10-07
+* Fixed old markers showing up in minimap-split-diff plugin
+
 ## 0.4.3 - 2015-10-06
 * Added compatibility for minimap plugin
 
