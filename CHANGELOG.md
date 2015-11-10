@@ -1,3 +1,6 @@
+## 0.4.5 - 2015-11-10
+* Fixed issue #2 - Cannot read property 'setScrollTop' of null
+
 ## 0.4.4 - 2015-10-07
 * Fixed old markers showing up in minimap-split-diff plugin
 
