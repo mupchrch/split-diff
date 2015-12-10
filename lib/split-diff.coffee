@@ -2,14 +2,14 @@
 {$} = require 'space-pen'
 DiffViewEditor = require './build-lines'
 SyncScroll = require './sync-scroll'
-
+configSchema = require "./config-schema"
 
 module.exports = SplitDiff =
+  config: configSchema
   subscriptions: null
   diffViewEditor1: null
   diffViewEditor2: null
   editorSubscriptions: null
-  #TODO(mike): serialize/save ignore whitespace setting?
   isWhitespaceIgnored: false
 
   activate: (state) ->
@@ -76,6 +76,9 @@ module.exports = SplitDiff =
     @editorSubscriptions.add editors.editor2.onDidDestroy =>
       @disable(true)
 
+    @editorSubscriptions.add atom.config.onDidChange 'split-diff.ignoreWhitespace', ({newValue, oldValue}) =>
+      @updateDiff(editors)
+
     @updateDiff(editors)
 
     detailMsg = 'Ignore whitespace: ' + @isWhitespaceIgnored
@@ -85,6 +88,7 @@ module.exports = SplitDiff =
   # creates the scroll sync
   updateDiff: (editors) ->
     @clearDiff()
+    @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
 
     SplitDiffCompute = require './split-diff-compute'
     computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored)
@@ -137,5 +141,13 @@ module.exports = SplitDiff =
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff
   toggleIgnoreWhitespace: ->
-    @isWhitespaceIgnored = !@isWhitespaceIgnored
+    @setConfig('ignoreWhitespace', !@isWhitespaceIgnored)
+    @isWhiteSpaceIgnored = @getConfig('ignoreWhitespace')
     @diffPanes()
+
+
+  getConfig: (config) ->
+    atom.config.get("split-diff.#{config}")
+
+  setConfig: (config, value) ->
+    atom.config.set("split-diff.#{config}", value)
