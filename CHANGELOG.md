@@ -1,3 +1,6 @@
+## 0.4.6 - 2015-12-12
+* Added issue #5 - Go to next/previous diff
+
 ## 0.4.5 - 2015-11-10
 * Fixed issue #2 - Cannot read property 'setScrollTop' of null
 

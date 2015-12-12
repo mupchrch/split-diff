@@ -9,5 +9,9 @@ atom-text-editor, atom-text-editor::shadow {
     &.split-diff-removed {
       background-color: fade(@syntax-color-removed, 50%);
     }
+
+    &.split-diff-selected {
+      background-color: fade(@syntax-color-modified, 50%);
+    }
   }
 }

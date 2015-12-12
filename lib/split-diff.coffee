@@ -11,12 +11,17 @@ module.exports = SplitDiff =
   diffViewEditor2: null
   editorSubscriptions: null
   isWhitespaceIgnored: false
+  linkedDiffChunks: null
+  diffChunkPointer: 0
+  isFirstChunkSelect: true
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
 
     @subscriptions.add atom.commands.add 'atom-workspace',
       'split-diff:diffPanes': => @diffPanes()
+      'split-diff:nextDiff': => @nextDiff()
+      'split-diff:prevDiff': => @prevDiff()
       'split-diff:disable': => @disable()
       'split-diff:toggleIgnoreWhitespace': => @toggleIgnoreWhitespace()
 
@@ -93,6 +98,8 @@ module.exports = SplitDiff =
     SplitDiffCompute = require './split-diff-compute'
     computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored)
 
+    @linkedDiffChunks = @evaluateDiffOrder(computedDiff.chunks)
+
     @displayDiff(editors, computedDiff)
 
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2)
@@ -109,8 +116,44 @@ module.exports = SplitDiff =
     if displayMsg
       atom.notifications.addInfo('Split Diff Disabled')
 
+  # called by "Move to next diff" command
+  nextDiff: ->
+    if !@isFirstChunkSelect
+      @diffChunkPointer++
+      if @diffChunkPointer >= @linkedDiffChunks.length
+        @diffChunkPointer = 0
+    else
+      @isFirstChunkSelect = false
+
+    @selectDiffs(@linkedDiffChunks[@diffChunkPointer])
+
+  # called by "Move to previous diff" command
+  prevDiff: ->
+    if !@isFirstChunkSelect
+      @diffChunkPointer--
+      if @diffChunkPointer < 0
+        @diffChunkPointer = @linkedDiffChunks.length - 1
+    else
+      @isFirstChunkSelect = false
+
+    @selectDiffs(@linkedDiffChunks[@diffChunkPointer])
+
+  selectDiffs: (diffChunk) ->
+    @diffViewEditor1.deselectAllLines()
+    @diffViewEditor2.deselectAllLines()
+
+    if diffChunk.oldLineStart
+      @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
+      @diffViewEditor2.scrollToLine(diffChunk.oldLineStart)
+    if diffChunk.newLineStart
+      @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
+      @diffViewEditor2.scrollToLine(diffChunk.newLineStart)
+
   # removes diff and sync scroll
   clearDiff: ->
+    diffChunkPointer = 0
+    isFirstChunkSelect = true
+
     if @diffViewEditor1
       @diffViewEditor1.removeLineOffsets()
       @diffViewEditor1.removeLineHighlights()
@@ -137,6 +180,58 @@ module.exports = SplitDiff =
 
     @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
     @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
+
+  evaluateDiffOrder: (chunks) ->
+    oldLineNumber = 0
+    newLineNumber = 0
+    prevChunk = null
+    # mapping of chunks between the two panes
+    diffChunks = []
+
+    for c in chunks
+      if c.added
+        if prevChunk && prevChunk.removed
+          diffChunk =
+            newLineStart: newLineNumber
+            newLineEnd: newLineNumber + c.count
+            oldLineStart: oldLineNumber - prevChunk.count
+            oldLineEnd: oldLineNumber
+          diffChunks.push(diffChunk)
+          prevChunk = null
+        else
+          prevChunk = c
+
+        newLineNumber += c.count
+      else if c.removed
+        if prevChunk && prevChunk.added
+          diffChunk =
+            newLineStart: newLineNumber - prevChunk.count
+            newLineEnd: newLineNumber
+            oldLineStart: oldLineNumber
+            oldLineEnd: oldLineNumber + c.count
+          diffChunks.push(diffChunk)
+          prevChunk = null
+        else
+          prevChunk = c
+
+        oldLineNumber += c.count
+      else
+        if prevChunk && prevChunk.added
+          diffChunk =
+            newLineStart: (newLineNumber - prevChunk.count)
+            newLineEnd: newLineNumber
+          diffChunks.push(diffChunk)
+        else if prevChunk && prevChunk.removed
+          diffChunk =
+            oldLineStart: (oldLineNumber - prevChunk.count)
+            oldLineEnd: oldLineNumber
+          diffChunks.push(diffChunk)
+
+        prevChunk = null
+        oldLineNumber += c.count
+        newLineNumber += c.count
+
+    return diffChunks
 
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff

@@ -1,6 +1,8 @@
 'context-menu':
   'atom-text-editor': [
     { 'label': 'Diff Panes', 'command': 'split-diff:diffPanes' }
+    { 'label': 'Move to Next Diff', 'command': 'split-diff:nextDiff' }
+    { 'label': 'Move to Previous Diff', 'command': 'split-diff:prevDiff' }
     { 'label': 'Disable split-diff', 'command': 'split-diff:disable' }
     { 'label': 'Toggle Ignore Whitespace', 'command': 'split-diff:toggleIgnoreWhitespace' }
   ]
@@ -11,6 +13,8 @@
       'label': 'Split Diff'
       'submenu': [
         { 'label': 'Diff Panes', 'command': 'split-diff:diffPanes' }
+        { 'label': 'Move to Next Diff', 'command': 'split-diff:nextDiff' }
+        { 'label': 'Move to Previous Diff', 'command': 'split-diff:prevDiff' }
         { 'label': 'Disable', 'command': 'split-diff:disable' }
         { 'label': 'Toggle Ignore Whitespace', 'command': 'split-diff:toggleIgnoreWhitespace' }
       ]
