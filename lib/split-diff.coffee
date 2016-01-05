@@ -14,6 +14,8 @@ module.exports = SplitDiff =
   linkedDiffChunks: null
   diffChunkPointer: 0
   isFirstChunkSelect: true
+  wasEditor1SoftWrapped: false
+  wasEditor2SoftWrapped: false
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -57,6 +59,18 @@ module.exports = SplitDiff =
       editor2 = new TextEditor()
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
+
+    # unfold all lines so diffs properly align
+    editor1.unfoldAll()
+    editor2.unfoldAll()
+
+    # turn off soft wrap setting for these editors so diffs properly align
+    if editor1.isSoftWrapped()
+      @wasEditor1SoftWrapped = true
+      editor1.setSoftWrapped(false)
+    if editor2.isSoftWrapped()
+      @wasEditor2SoftWrapped = true
+      editor2.setSoftWrapped(false)
 
     editors =
       editor1: editor1
@@ -108,6 +122,13 @@ module.exports = SplitDiff =
   # called by "Disable" command
   # removes diff and sync scroll, disposes of subscriptions
   disable: (displayMsg) ->
+    if @wasEditor1SoftWrapped
+      @diffViewEditor1.enableSoftWrap()
+      @wasEditor1SoftWrapped = false
+    if @wasEditor2SoftWrapped
+      @diffViewEditor2.enableSoftWrap()
+      @wasEditor2SoftWrapped = false
+
     @clearDiff()
     if @editorSubscriptions
       @editorSubscriptions.dispose()
