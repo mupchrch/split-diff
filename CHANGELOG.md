@@ -1,3 +1,6 @@
+## 0.5.2 - 2016-01-05
+* Fixed bug #3 - Cannot read property 'clipScreenColumn' of undefined
+
 ## 0.5.1 - 2016-01-04
 * Fixed bug #11 - Cannot read property 'deselectAllLines' of null
 * Removed some items from right click context menu
