@@ -28,6 +28,9 @@ To stop diffing, simply close one of the panes *or* use the **Disable** command.
 | **Disable** | Disables the package. Until next time, my friend. |  |
 | **Toggle Ignore Whitespace** | Toggles the Ignore Whitespace setting. |  |
 
+### Settings
+* Ignore Whitespace - Does not diff whitespace when checked.
+
 ## Minimap Plugin
 
 Accompanying minimap plugin: https://atom.io/packages/minimap-split-diff
