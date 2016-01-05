@@ -139,15 +139,16 @@ module.exports = SplitDiff =
     @selectDiffs(@linkedDiffChunks[@diffChunkPointer])
 
   selectDiffs: (diffChunk) ->
-    @diffViewEditor1.deselectAllLines()
-    @diffViewEditor2.deselectAllLines()
+    if @diffViewEditor1 && @diffViewEditor2
+      @diffViewEditor1.deselectAllLines()
+      @diffViewEditor2.deselectAllLines()
 
-    if diffChunk.oldLineStart
-      @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
-      @diffViewEditor2.scrollToLine(diffChunk.oldLineStart)
-    if diffChunk.newLineStart
-      @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
-      @diffViewEditor2.scrollToLine(diffChunk.newLineStart)
+      if diffChunk.oldLineStart
+        @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
+        @diffViewEditor2.scrollToLine(diffChunk.oldLineStart)
+      if diffChunk.newLineStart
+        @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
+        @diffViewEditor2.scrollToLine(diffChunk.newLineStart)
 
   # removes diff and sync scroll
   clearDiff: ->

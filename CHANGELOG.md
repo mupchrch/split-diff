@@ -1,8 +1,12 @@
+## 0.5.1 - 2016-01-04
+* Fixed bug #11 - Cannot read property 'deselectAllLines' of null
+* Removed some items from right click context menu
+
 ## 0.5.0 - 2015-12-12
 * Added issue #5 - Go to next/previous diff
 
 ## 0.4.5 - 2015-11-10
-* Fixed issue #2 - Cannot read property 'setScrollTop' of null
+* Fixed bug #2 - Cannot read property 'setScrollTop' of null
 
 ## 0.4.4 - 2015-10-07
 * Fixed old markers showing up in minimap-split-diff plugin
