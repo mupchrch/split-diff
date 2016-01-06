@@ -22,15 +22,20 @@ To stop diffing, simply close one of the panes *or* use the **Disable** command.
 
 | Command | Effect | Default Keymaps |
 | ------- | ------ | --------------- |
-| **Diff Panes** | Diffs text between two side-by-side panes. Creates panes as needed. |  |
-| **Move to Next Diff** | Scrolls to the next chunk of the diff and highlights it. | `ctrl-alt-n` |
-| **Move to Previous Diff** | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
-| **Disable** | Disables the package. Until next time, my friend. |  |
-| **Toggle Ignore Whitespace** | Toggles the Ignore Whitespace setting. |  |
+| `Diff Panes` | Diffs text between two side-by-side panes. Creates panes as needed. | ... |
+| `Move to Next Diff` | Scrolls to the next chunk of the diff and highlights it. | `ctrl-alt-n` |
+| `Move to Previous Diff` | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
+| `Disable` | Disables the package. Until next time, my friend. | ... |
+| `Toggle Ignore Whitespace` | Toggles the Ignore Whitespace setting. | ... |
 
 ### Settings
+
 * Ignore Whitespace - Does not diff whitespace when checked.
 
 ## Minimap Plugin
 
-Accompanying minimap plugin: https://atom.io/packages/minimap-split-diff
+Get the [Split Diff minimap plugin](https://atom.io/packages/minimap-split-diff) to make it easier to spot differences!
+
+## Looking for Git Support?
+
+Try the [git-time-machine package](https://atom.io/packages/git-time-machine), which uses Split Diff!

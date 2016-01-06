@@ -160,7 +160,7 @@ module.exports = SplitDiff =
     @selectDiffs(@linkedDiffChunks[@diffChunkPointer])
 
   selectDiffs: (diffChunk) ->
-    if @diffViewEditor1 && @diffViewEditor2
+    if diffChunk && @diffViewEditor1 && @diffViewEditor2
       @diffViewEditor1.deselectAllLines()
       @diffViewEditor2.deselectAllLines()
 
