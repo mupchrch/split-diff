@@ -1,3 +1,6 @@
+## 0.5.4 - 2016-01-20
+* Fixed bug #13 - Missing 'space-pen'
+
 ## 0.5.3 - 2016-01-11
 * Fixed bug #12 - Uncaught TypeError
 

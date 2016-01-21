@@ -1,5 +1,4 @@
 {CompositeDisposable, Emitter, TextEditor, TextBuffer} = require 'atom'
-{$} = require 'space-pen'
 DiffViewEditor = require './build-lines'
 SyncScroll = require './sync-scroll'
 configSchema = require "./config-schema"
@@ -40,15 +39,15 @@ module.exports = SplitDiff =
     editor1 = null
     editor2 = null
 
-    # find visible editors
-    atom.workspace.observeTextEditors (editor) =>
-      editorView = atom.views.getView(editor)
-      $editorView = $(editorView)
-      if $editorView.is ':visible'
+    panes = atom.workspace.getPanes()
+    for p in panes
+      activeItem = p.getActiveItem()
+      if atom.workspace.isTextEditor(activeItem)
         if editor1 == null
-          editor1 = editor
+          editor1 = activeItem
         else if editor2 == null
-          editor2 = editor
+          editor2 = activeItem
+          break
 
     # auto open editor panes so we have two to diff with
     if editor1 == null
