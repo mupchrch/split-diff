@@ -1,7 +1,7 @@
 {
   "name": "split-diff",
   "main": "./lib/split-diff",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "A split pane diff tool.",
   "keywords": [
     "diff",
@@ -15,7 +15,10 @@
     "visual"
   ],
   "activationCommands": {
-    "atom-workspace": ["split-diff:toggle", "split-diff:enable"]
+    "atom-workspace": [
+      "split-diff:toggle",
+      "split-diff:enable"
+    ]
   },
   "repository": "https://github.com/mupchrch/split-diff",
   "license": "MIT",
