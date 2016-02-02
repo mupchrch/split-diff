@@ -15,7 +15,7 @@
     "visual"
   ],
   "activationCommands": {
-    "atom-workspace": "split-diff:diffPanes"
+    "atom-workspace": ["split-diff:toggle", "split-diff:enable"]
   },
   "repository": "https://github.com/mupchrch/split-diff",
   "license": "MIT",

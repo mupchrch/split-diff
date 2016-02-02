@@ -1,3 +1,8 @@
+## 0.5.5 - 2016-02-02
+* Removed "Diff Panes" and "Disable" commands from menus (still available from command palette)
+* Renamed "Diff Panes" command to "Enable"
+* Added "Toggle" command to package and menus
+
 ## 0.5.4 - 2016-01-20
 * Fixed bug #13 - Missing 'space-pen'
 

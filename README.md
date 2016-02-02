@@ -6,27 +6,26 @@ Diffs text between two split panes. The diff is updated when any changes are mad
 
 ## Usage
 
-The **Diff Panes** command is unique; it will create panes as necessary. Here are the situations that could arise:
+### Commands
+
+| Command | Effect | Default Keymaps |
+| ------- | ------ | --------------- |
+| `Toggle` | Toggles a diff of the text between two side-by-side panes. Creates panes as needed. | ... |
+| `Ignore Whitespace` | Toggles the Ignore Whitespace setting. | ... |
+| `Move to Next Diff` | Scrolls to the next chunk of the diff and highlights it. | `ctrl-alt-n` |
+| `Move to Previous Diff` | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
+
+The `Toggle` command is unique; it will create panes as necessary. Here are the situations that could arise:
 
 * If there are **no panes** open, then it will create two *empty* panes to paste your diffs into.
 * If there is **one pane** open, then it will diff the pane against a newly created *empty* pane to paste your diff into.
 * If there are **two panes** open, then it will diff the two panes.
 * If there are **more than two panes** open, then it will diff the first two panes it finds.
 
-To stop diffing, simply close one of the panes *or* use the **Disable** command.
+To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 
 *This package will unfold all folded lines in order to properly align the diff.*
 *It will also temporarily turn off soft wrap in the two panes in order to properly align the diff.*
-
-### Commands
-
-| Command | Effect | Default Keymaps |
-| ------- | ------ | --------------- |
-| `Diff Panes` | Diffs text between two side-by-side panes. Creates panes as needed. | ... |
-| `Move to Next Diff` | Scrolls to the next chunk of the diff and highlights it. | `ctrl-alt-n` |
-| `Move to Previous Diff` | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
-| `Disable` | Disables the package. Until next time, my friend. | ... |
-| `Toggle Ignore Whitespace` | Toggles the Ignore Whitespace setting. | ... |
 
 ### Settings
 

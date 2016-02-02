@@ -15,16 +15,18 @@ module.exports = SplitDiff =
   isFirstChunkSelect: true
   wasEditor1SoftWrapped: false
   wasEditor2SoftWrapped: false
+  isEnabled: false
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
 
     @subscriptions.add atom.commands.add 'atom-workspace',
-      'split-diff:diffPanes': => @diffPanes()
-      'split-diff:nextDiff': => @nextDiff()
-      'split-diff:prevDiff': => @prevDiff()
+      'split-diff:enable': => @diffPanes()
+      'split-diff:next-diff': => @nextDiff()
+      'split-diff:prev-diff': => @prevDiff()
       'split-diff:disable': => @disable()
-      'split-diff:toggleIgnoreWhitespace': => @toggleIgnoreWhitespace()
+      'split-diff:ignore-whitespace': => @toggleIgnoreWhitespace()
+      'split-diff:toggle': => @toggle()
 
   deactivate: ->
     @disable()
@@ -77,7 +79,7 @@ module.exports = SplitDiff =
 
     return editors
 
-  # called by the command "Diff Panes" to do initial diff
+  # called by the command "enable" to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
   diffPanes: ->
     @disable(false)
@@ -105,6 +107,7 @@ module.exports = SplitDiff =
   # called by both diffPanes and the editor subscription to update the diff
   # creates the scroll sync
   updateDiff: (editors) ->
+    @isEnabled = true
     @clearDiff()
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
 
@@ -121,6 +124,7 @@ module.exports = SplitDiff =
   # called by "Disable" command
   # removes diff and sync scroll, disposes of subscriptions
   disable: (displayMsg) ->
+    @isEnabled = false
     if @wasEditor1SoftWrapped
       @diffViewEditor1.enableSoftWrap()
       @wasEditor1SoftWrapped = false
@@ -260,6 +264,14 @@ module.exports = SplitDiff =
     @setConfig('ignoreWhitespace', !@isWhitespaceIgnored)
     @isWhiteSpaceIgnored = @getConfig('ignoreWhitespace')
     @diffPanes()
+
+  # called by "toggle" command
+  # toggles split diff
+  toggle: ->
+    if @isEnabled
+      @disable()
+    else
+      @diffPanes()
 
 
   getConfig: (config) ->
