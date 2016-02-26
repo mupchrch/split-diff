@@ -20,7 +20,6 @@ The `Toggle` command is unique; it will create panes as necessary. Here are the 
 * If there are **no panes** open, then it will create two *empty* panes to paste your diffs into.
 * If there is **one pane** open, then it will diff the pane against a newly created *empty* pane to paste your diff into.
 * If there are **two panes** open, then it will diff the two panes.
-* If there are **more than two panes** open, then it will diff the first two panes it finds.
 
 To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 
@@ -29,7 +28,8 @@ To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 
 ### Settings
 
-* Ignore Whitespace - Does not diff whitespace when checked.
+* Diff Line Characters - Diffs the characters between each line when this box is checked.
+* Ignore Whitespace - Will not diff whitespace when this box is checked.
 
 ## Minimap Plugin
 

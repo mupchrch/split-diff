@@ -1,17 +1,26 @@
 @import "syntax-variables";
 
 atom-text-editor, atom-text-editor::shadow {
+  .gutter .line-number,
   .line {
     &.split-diff-added {
-      background-color: fade(@syntax-color-added, 50%);
+      background-color: fade(@syntax-color-added, 40%);
     }
 
     &.split-diff-removed {
-      background-color: fade(@syntax-color-removed, 50%);
+      background-color: fade(@syntax-color-removed, 40%);
     }
 
     &.split-diff-selected {
-      background-color: fade(@syntax-color-modified, 50%);
+      background-color: fade(@syntax-color-modified, 40%);
     }
+  }
+
+  .split-diff-char-added .region {
+    background-color: fade(@syntax-color-added, 50%);
+  }
+
+  .split-diff-char-removed .region {
+    background-color: fade(@syntax-color-removed, 50%);
   }
 }

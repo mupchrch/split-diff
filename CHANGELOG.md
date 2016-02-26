@@ -1,3 +1,8 @@
+## 0.6.0 - 2016-02-26
+* Fixed keybindings not binding
+* Added highlight colors to gutter line numbers
+* Added feature #17 - Highlight line character difference
+
 ## 0.5.5 - 2016-02-02
 * Removed "Diff Panes" and "Disable" commands from menus (still available from command palette)
 * Renamed "Diff Panes" command to "Enable"
@@ -17,7 +22,7 @@
 * Removed some items from right click context menu
 
 ## 0.5.0 - 2015-12-12
-* Added issue #5 - Go to next/previous diff
+* Added feature #5 - Go to next/previous diff
 
 ## 0.4.5 - 2015-11-10
 * Fixed bug #2 - Uncaught TypeError

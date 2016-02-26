@@ -10,6 +10,7 @@ module.exports = SplitDiff =
   diffViewEditor2: null
   editorSubscriptions: null
   isWhitespaceIgnored: false
+  isCharDiffEnabled: true
   linkedDiffChunks: null
   diffChunkPointer: 0
   isFirstChunkSelect: true
@@ -101,7 +102,8 @@ module.exports = SplitDiff =
 
     @updateDiff(editors)
 
-    detailMsg = 'Ignore whitespace: ' + @isWhitespaceIgnored
+    detailMsg = 'Ignore Whitespace: ' + @isWhitespaceIgnored
+    detailMsg += '\nDiff Line Characters: ' + @isCharDiffEnabled
     atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg})
 
   # called by both diffPanes and the editor subscription to update the diff
@@ -110,6 +112,7 @@ module.exports = SplitDiff =
     @isEnabled = true
     @clearDiff()
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
+    @isCharDiffEnabled = @getConfig('diffLineChars')
 
     SplitDiffCompute = require './split-diff-compute'
     computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored)
@@ -117,6 +120,9 @@ module.exports = SplitDiff =
     @linkedDiffChunks = @evaluateDiffOrder(computedDiff.chunks)
 
     @displayDiff(editors, computedDiff)
+
+    if @isCharDiffEnabled
+      @highlightCharDiff(SplitDiffCompute, @linkedDiffChunks)
 
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2)
     @syncScroll.syncPositions()
@@ -257,6 +263,21 @@ module.exports = SplitDiff =
         newLineNumber += c.count
 
     return diffChunks
+
+  # highlights the character differences between lines
+  highlightCharDiff: (SplitDiffCompute, chunks) ->
+    for c in chunks
+      # make sure this chunk has a friend
+      if c.newLineStart && c.oldLineStart
+        lineRange = 0
+        if (c.newLineEnd - c.newLineStart) < (c.oldLineEnd - c.oldLineStart)
+          lineRange = c.newLineEnd - c.newLineStart
+        else
+          lineRange = c.oldLineEnd - c.oldLineStart
+        for i in [0 ... lineRange] by 1
+          charDiff = SplitDiffCompute.computeCharDiff(@diffViewEditor1.getLineText(c.oldLineStart + i), @diffViewEditor2.getLineText(c.newLineStart + i))
+          @diffViewEditor1.setCharHighlights(c.oldLineStart + i, charDiff, undefined)
+          @diffViewEditor2.setCharHighlights(c.newLineStart + i, undefined, charDiff)
 
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff
