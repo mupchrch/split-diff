@@ -99,6 +99,8 @@ module.exports = SplitDiff =
 
     @editorSubscriptions.add atom.config.onDidChange 'split-diff.ignoreWhitespace', ({newValue, oldValue}) =>
       @updateDiff(editors)
+    @editorSubscriptions.add atom.config.onDidChange 'split-diff.diffLineChars', ({newValue, oldValue}) =>
+      @updateDiff(editors)
 
     @updateDiff(editors)
 
@@ -186,14 +188,10 @@ module.exports = SplitDiff =
     isFirstChunkSelect = true
 
     if @diffViewEditor1
-      @diffViewEditor1.removeLineOffsets()
-      @diffViewEditor1.removeLineHighlights()
       @diffViewEditor1.destroyMarkers()
       @diffViewEditor1 = null
 
     if @diffViewEditor2
-      @diffViewEditor2.removeLineOffsets()
-      @diffViewEditor2.removeLineHighlights()
       @diffViewEditor2.destroyMarkers()
       @diffViewEditor2 = null
 
@@ -206,11 +204,11 @@ module.exports = SplitDiff =
     @diffViewEditor1 = new DiffViewEditor(editors.editor1)
     @diffViewEditor2 = new DiffViewEditor(editors.editor2)
 
-    @diffViewEditor1.setLineOffsets(computedDiff.oldLineOffsets)
-    @diffViewEditor2.setLineOffsets(computedDiff.newLineOffsets)
-
     @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
     @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
+
+    @diffViewEditor1.setLineOffsets(computedDiff.oldLineOffsets)
+    @diffViewEditor2.setLineOffsets(computedDiff.newLineOffsets)
 
   evaluateDiffOrder: (chunks) ->
     oldLineNumber = 0

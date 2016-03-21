@@ -1,3 +1,6 @@
+## 0.X.X - [DATE]
+* Refactored to use block decorations for space between chunks
+
 ## 0.6.0 - 2016-02-26
 * Fixed keybindings not binding
 * Added highlight colors to gutter line numbers
