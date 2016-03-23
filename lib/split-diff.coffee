@@ -56,11 +56,16 @@ module.exports = SplitDiff =
     if editor1 == null
       editor1 = new TextEditor()
       leftPane = atom.workspace.getActivePane()
+      editor1.setText('Paste what you want to diff here!')
+      editor1.selectAll()
       leftPane.addItem(editor1)
     if editor2 == null
       editor2 = new TextEditor()
       rightPane = atom.workspace.getActivePane().splitRight()
+      editor2.setText('Paste what you want to diff here!')
+      editor2.selectAll()
       rightPane.addItem(editor2)
+
 
     # unfold all lines so diffs properly align
     editor1.unfoldAll()
@@ -97,7 +102,14 @@ module.exports = SplitDiff =
     @editorSubscriptions.add editors.editor2.onDidDestroy =>
       @disable(true)
 
+    # update diff on any settings change
     @editorSubscriptions.add atom.config.onDidChange 'split-diff.ignoreWhitespace', ({newValue, oldValue}) =>
+      @updateDiff(editors)
+    @editorSubscriptions.add atom.config.onDidChange 'split-diff.diffLineChars', ({newValue, oldValue}) =>
+      @updateDiff(editors)
+    @editorSubscriptions.add atom.config.onDidChange 'split-diff.leftEditorColor', ({newValue, oldValue}) =>
+      @updateDiff(editors)
+    @editorSubscriptions.add atom.config.onDidChange 'split-diff.rightEditorColor', ({newValue, oldValue}) =>
       @updateDiff(editors)
 
     @updateDiff(editors)
@@ -209,8 +221,16 @@ module.exports = SplitDiff =
     @diffViewEditor1.setLineOffsets(computedDiff.oldLineOffsets)
     @diffViewEditor2.setLineOffsets(computedDiff.newLineOffsets)
 
-    @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
-    @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
+    leftColor = @getConfig('leftEditorColor')
+    rightColor = @getConfig('rightEditorColor')
+    if leftColor == 'green'
+      @diffViewEditor1.setLineHighlights(computedDiff.removedLines, undefined)
+    else
+      @diffViewEditor1.setLineHighlights(undefined, computedDiff.removedLines)
+    if rightColor == 'green'
+      @diffViewEditor2.setLineHighlights(computedDiff.addedLines, undefined)
+    else
+      @diffViewEditor2.setLineHighlights(undefined, computedDiff.addedLines)
 
   evaluateDiffOrder: (chunks) ->
     oldLineNumber = 0
@@ -276,15 +296,22 @@ module.exports = SplitDiff =
           lineRange = c.oldLineEnd - c.oldLineStart
         for i in [0 ... lineRange] by 1
           charDiff = SplitDiffCompute.computeCharDiff(@diffViewEditor1.getLineText(c.oldLineStart + i), @diffViewEditor2.getLineText(c.newLineStart + i))
-          @diffViewEditor1.setCharHighlights(c.oldLineStart + i, charDiff, undefined)
-          @diffViewEditor2.setCharHighlights(c.newLineStart + i, undefined, charDiff)
+          leftColor = @getConfig('leftEditorColor')
+          rightColor = @getConfig('rightEditorColor')
+          if leftColor == 'green'
+            @diffViewEditor1.setCharHighlights(c.oldLineStart + i, undefined, charDiff)
+          else
+            @diffViewEditor1.setCharHighlights(c.oldLineStart + i, charDiff, undefined)
+          if rightColor == 'green'
+            @diffViewEditor2.setCharHighlights(c.newLineStart + i, undefined, charDiff)
+          else
+            @diffViewEditor2.setCharHighlights(c.newLineStart + i, charDiff, undefined)
 
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff
   toggleIgnoreWhitespace: ->
     @setConfig('ignoreWhitespace', !@isWhitespaceIgnored)
     @isWhiteSpaceIgnored = @getConfig('ignoreWhitespace')
-    @diffPanes()
 
   # called by "toggle" command
   # toggles split diff
