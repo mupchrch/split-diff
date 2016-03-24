@@ -45,7 +45,7 @@ module.exports = SplitDiff =
     panes = atom.workspace.getPanes()
     for p in panes
       activeItem = p.getActiveItem()
-      if atom.workspace.isTextEditor(activeItem)
+      if activeItem instanceof TextEditor
         if editor1 == null
           editor1 = activeItem
         else if editor2 == null
