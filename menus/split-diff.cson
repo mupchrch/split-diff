@@ -3,9 +3,6 @@
     'label': 'Split Diff'
     'submenu':[
       { 'label': 'Toggle', 'command': 'split-diff:toggle' }
-      { 'label': 'Ignore Whitespace', 'command': 'split-diff:ignore-whitespace' }
-      { 'label': 'Move to Next Diff', 'command': 'split-diff:next-diff' }
-      { 'label': 'Move to Previous Diff', 'command': 'split-diff:prev-diff' }
     ]
   ]
 
@@ -16,9 +13,6 @@
       'label': 'Split Diff'
       'submenu': [
         { 'label': 'Toggle', 'command': 'split-diff:toggle' }
-        { 'label': 'Ignore Whitespace', 'command': 'split-diff:ignore-whitespace' }
-        { 'label': 'Move to Next Diff', 'command': 'split-diff:next-diff' }
-        { 'label': 'Move to Previous Diff', 'command': 'split-diff:prev-diff' }
       ]
     ]
   }
