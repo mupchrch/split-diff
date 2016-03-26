@@ -1,3 +1,7 @@
+## 0.X.X - [DATE]
+* Refactored to use block decorations for space between chunks #18
+* Changed setting/code for "Diff Line Characters" to "Show Word Diff"
+
 ## 0.6.1 - 2016-03-24
 * Added Left/Right Editor Color settings
 * Fixed a bug where char diff would be at the wrong position

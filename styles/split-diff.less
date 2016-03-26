@@ -16,11 +16,15 @@ atom-text-editor, atom-text-editor::shadow {
     }
   }
 
-  .split-diff-char-added .region {
+  .split-diff-word-added .region {
     background-color: fade(@syntax-color-added, 50%);
   }
 
-  .split-diff-char-removed .region {
+  .split-diff-word-removed .region {
     background-color: fade(@syntax-color-removed, 50%);
+  }
+
+  .split-diff-offset {
+    background-color: @syntax-gutter-background-color-selected;
   }
 }
