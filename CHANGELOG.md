@@ -1,6 +1,8 @@
-## 0.X.X - [DATE]
-* Refactored to use block decorations for space between chunks #18
+## 0.6.2 - 2016-03-26
+* Refactored for #18 to use block decorations for space between chunks
 * Changed setting/code for "Diff Line Characters" to "Show Word Diff"
+* Fixed a bug where next/prev diff wouldn't be reset between sessions
+* Updated demo gif
 
 ## 0.6.1 - 2016-03-24
 * Added Left/Right Editor Color settings

@@ -59,6 +59,7 @@ module.exports = SplitDiff =
       leftPane.addItem(editor1)
     if editor2 == null
       editor2 = new TextEditor()
+      editor2.setGrammar(editor1.getGrammar())
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
 
@@ -143,6 +144,7 @@ module.exports = SplitDiff =
   updateDiff: (editors) ->
     @isEnabled = true
     @clearDiff()
+    console.log(@diffChunkPointer)
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
     @isWordDiffEnabled = @getConfig('diffWords')
 
@@ -171,7 +173,7 @@ module.exports = SplitDiff =
       @wasEditor2SoftWrapped = false
 
     @clearDiff()
-    if @editorSubscriptions
+    if @editorSubscriptions?
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
 
@@ -201,31 +203,31 @@ module.exports = SplitDiff =
     @selectDiffs(@linkedDiffChunks[@diffChunkPointer])
 
   selectDiffs: (diffChunk) ->
-    if diffChunk && @diffViewEditor1 && @diffViewEditor2
+    if diffChunk? && @diffViewEditor1? && @diffViewEditor2?
       @diffViewEditor1.deselectAllLines()
       @diffViewEditor2.deselectAllLines()
 
-      if diffChunk.oldLineStart
+      if diffChunk.oldLineStart?
         @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
         @diffViewEditor2.scrollToLine(diffChunk.oldLineStart)
-      if diffChunk.newLineStart
+      if diffChunk.newLineStart?
         @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
         @diffViewEditor2.scrollToLine(diffChunk.newLineStart)
 
   # removes diff and sync scroll
   clearDiff: ->
-    diffChunkPointer = 0
-    isFirstChunkSelect = true
+    @diffChunkPointer = 0
+    @isFirstChunkSelect = true
 
-    if @diffViewEditor1
+    if @diffViewEditor1?
       @diffViewEditor1.destroyMarkers()
       @diffViewEditor1 = null
 
-    if @diffViewEditor2
+    if @diffViewEditor2?
       @diffViewEditor2.destroyMarkers()
       @diffViewEditor2 = null
 
-    if @syncScroll
+    if @syncScroll?
       @syncScroll.dispose()
       @syncScroll = null
 
@@ -256,8 +258,8 @@ module.exports = SplitDiff =
     diffChunks = []
 
     for c in chunks
-      if c.added
-        if prevChunk && prevChunk.removed
+      if c.added?
+        if prevChunk? && prevChunk.removed?
           diffChunk =
             newLineStart: newLineNumber
             newLineEnd: newLineNumber + c.count
@@ -269,8 +271,8 @@ module.exports = SplitDiff =
           prevChunk = c
 
         newLineNumber += c.count
-      else if c.removed
-        if prevChunk && prevChunk.added
+      else if c.removed?
+        if prevChunk? && prevChunk.added?
           diffChunk =
             newLineStart: newLineNumber - prevChunk.count
             newLineEnd: newLineNumber
@@ -283,12 +285,12 @@ module.exports = SplitDiff =
 
         oldLineNumber += c.count
       else
-        if prevChunk && prevChunk.added
+        if prevChunk? && prevChunk.added?
           diffChunk =
             newLineStart: (newLineNumber - prevChunk.count)
             newLineEnd: newLineNumber
           diffChunks.push(diffChunk)
-        else if prevChunk && prevChunk.removed
+        else if prevChunk? && prevChunk.removed?
           diffChunk =
             oldLineStart: (oldLineNumber - prevChunk.count)
             oldLineEnd: oldLineNumber
@@ -306,7 +308,7 @@ module.exports = SplitDiff =
     rightColor = @getConfig('rightEditorColor')
     for c in chunks
       # make sure this chunk matches to another
-      if c.newLineStart && c.oldLineStart
+      if c.newLineStart? && c.oldLineStart?
         lineRange = 0
         excessLines = 0
         if (c.newLineEnd - c.newLineStart) < (c.oldLineEnd - c.oldLineStart)
@@ -339,7 +341,7 @@ module.exports = SplitDiff =
               @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getLineText(c.newLineStart + lineRange + j)}], 'added', @isWhitespaceIgnored)
             else
               @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getLineText(c.newLineStart + lineRange + j)}], 'removed', @isWhitespaceIgnored)
-      else if c.newLineStart
+      else if c.newLineStart?
         # fully highlight chunks that don't match up to another
         lineRange = c.newLineEnd - c.newLineStart
         for i in [0 ... lineRange] by 1
@@ -347,7 +349,7 @@ module.exports = SplitDiff =
             @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getLineText(c.newLineStart + i)}], 'added', @isWhitespaceIgnored)
           else
             @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getLineText(c.newLineStart + i)}], 'removed', @isWhitespaceIgnored)
-      else if c.oldLineStart
+      else if c.oldLineStart?
         # fully highlight chunks that don't match up to another
         lineRange = c.oldLineEnd - c.oldLineStart
         for i in [0 ... lineRange] by 1
