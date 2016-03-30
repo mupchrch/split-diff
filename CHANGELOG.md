@@ -1,3 +1,6 @@
+## 0.6.3 - 2016-03-30
+* Remove `console.log` #23 - thanks itiut!
+
 ## 0.6.2 - 2016-03-26
 * Refactored for #18 to use block decorations for space between chunks
 * Changed setting/code for "Diff Line Characters" to "Show Word Diff"
