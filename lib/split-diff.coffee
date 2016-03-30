@@ -144,7 +144,6 @@ module.exports = SplitDiff =
   updateDiff: (editors) ->
     @isEnabled = true
     @clearDiff()
-    console.log(@diffChunkPointer)
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
     @isWordDiffEnabled = @getConfig('diffWords')
 
