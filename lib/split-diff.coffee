@@ -1,4 +1,4 @@
-{CompositeDisposable, Emitter, TextEditor, TextBuffer} = require 'atom'
+{CompositeDisposable, Emitter, TextBuffer} = require 'atom'
 DiffViewEditor = require './build-lines'
 SyncScroll = require './sync-scroll'
 configSchema = require "./config-schema"
@@ -45,7 +45,7 @@ module.exports = SplitDiff =
     panes = atom.workspace.getPanes()
     for p in panes
       activeItem = p.getActiveItem()
-      if activeItem instanceof TextEditor
+      if atom.workspace.isTextEditor(activeItem)
         if editor1 == null
           editor1 = activeItem
         else if editor2 == null
@@ -54,11 +54,11 @@ module.exports = SplitDiff =
 
     # auto open editor panes so we have two to diff with
     if editor1 == null
-      editor1 = new TextEditor()
+      editor1 = atom.workspace.buildTextEditor()
       leftPane = atom.workspace.getActivePane()
       leftPane.addItem(editor1)
     if editor2 == null
-      editor2 = new TextEditor()
+      editor2 = atom.workspace.buildTextEditor()
       editor2.setGrammar(editor1.getGrammar())
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
