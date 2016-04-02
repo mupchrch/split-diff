@@ -1,3 +1,7 @@
+## 0.7.0 - 2016-04-02
+* Add ability to display diff of git changes #8
+* Fix deprecations about TextEditor #24 - thanks itiut!
+
 ## 0.6.3 - 2016-03-30
 * Remove debugging print statement #23 - thanks itiut!
 

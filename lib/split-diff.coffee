@@ -1,7 +1,8 @@
-{CompositeDisposable, Emitter, TextBuffer} = require 'atom'
+{CompositeDisposable, Directory} = require 'atom'
 DiffViewEditor = require './build-lines'
 SyncScroll = require './sync-scroll'
 configSchema = require "./config-schema"
+Path = require 'path'
 
 module.exports = SplitDiff =
   config: configSchema
@@ -62,6 +63,17 @@ module.exports = SplitDiff =
       editor2.setGrammar(editor1.getGrammar())
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
+
+    editor1Path = editor1.getPath()
+    # only show git changes if the right editor is empty
+    if editor1Path? && (editor2.getLineCount() == 1 && editor2.lineTextForBufferRow(0) == '')
+      atom.project.repositoryForDirectory(new Directory(Path.dirname(editor1Path))).then(
+        (projectRepo) ->
+          if projectRepo?
+            relativeEditor1Path = projectRepo.relativize(editor1Path)
+            #chunks = projectRepo.getLineDiffs(relativeEditor1Path, editor1.getText())
+            editor2.setText(projectRepo.repo.getHeadBlob(relativeEditor1Path))
+      )
 
     # unfold all lines so diffs properly align
     editor1.unfoldAll()

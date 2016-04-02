@@ -1,6 +1,8 @@
 # split-diff package
 
-Diffs text between two split panes. The diff is updated when any changes are made. New panes are created if less than two panes exist upon run of the package.
+Diffs text between two split panes. New panes are created if less than two panes exist upon run of the package.
+
+\*\* **Now automatically finds and displays diff of git changes!** \*\*
 
 ![Split Diff in action](https://github.com/mupchrch/split-diff/raw/master/demo.gif)
 
@@ -10,16 +12,10 @@ Diffs text between two split panes. The diff is updated when any changes are mad
 
 | Command | Effect | Default Keymaps |
 | ------- | ------ | --------------- |
-| `Toggle` | Toggles a diff of the text between two side-by-side panes. Creates panes as needed. | ... |
+| `Toggle` | Toggles a diff of the text between two side-by-side panes. Creates panes as necessary. Displays git changes if there is a repository found. | ... |
 | `Ignore Whitespace` | Toggles the Ignore Whitespace setting. | ... |
 | `Move to Next Diff` | Scrolls to the next chunk of the diff and highlights it. | `ctrl-alt-n` |
 | `Move to Previous Diff` | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
-
-The `Toggle` command is unique; it will create panes as necessary. Here are the situations that could arise:
-
-* If there are **no panes** open, then it will create two *empty* panes to paste your diffs into.
-* If there is **one pane** open, then it will diff the pane against a newly created *empty* pane to paste your diff into.
-* If there are **two panes** open, then it will diff the two panes.
 
 To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 
@@ -36,7 +32,3 @@ To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 ## Minimap Plugin
 
 Get the [Split Diff minimap plugin](https://atom.io/packages/minimap-split-diff) to make it easier to spot differences!
-
-## Looking for Git Support?
-
-Try the [git-time-machine package](https://atom.io/packages/git-time-machine), which uses Split Diff!
