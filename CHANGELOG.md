@@ -1,9 +1,10 @@
-## 0.7.0 - 2016-04-02
-* Add ability to display diff of git changes #8
-* Fix deprecations about TextEditor #24 - thanks itiut!
+## 0.7.0 - 2016-04-05
+* Added ability to display diff of git changes #8
+* Fixed deprecations about TextEditor #24 - thanks itiut!
+* Fixed reenabling soft wrap throwing an exception
 
 ## 0.6.3 - 2016-03-30
-* Remove debugging print statement #23 - thanks itiut!
+* Removed debugging print statement #23 - thanks itiut!
 
 ## 0.6.2 - 2016-03-26
 * Refactored for #18 to use block decorations for space between chunks
