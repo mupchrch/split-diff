@@ -183,7 +183,10 @@ module.exports = SplitDiff =
       @diffViewEditor2.enableSoftWrap()
       @wasEditor2SoftWrapped = false
 
+    @diffChunkPointer = 0
+    @isFirstChunkSelect = true
     @clearDiff()
+    
     if @editorSubscriptions?
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
@@ -227,9 +230,6 @@ module.exports = SplitDiff =
 
   # removes diff and sync scroll
   clearDiff: ->
-    @diffChunkPointer = 0
-    @isFirstChunkSelect = true
-
     if @diffViewEditor1?
       @diffViewEditor1.destroyMarkers()
       @diffViewEditor1 = null

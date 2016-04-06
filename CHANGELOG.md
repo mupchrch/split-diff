@@ -1,3 +1,6 @@
+## 0.7.1 - 2016-04-06
+* Fixed next/previous diff starting from beginning of file after change #25
+
 ## 0.7.0 - 2016-04-05
 * Added ability to display diff of git changes #8
 * Fixed deprecations about TextEditor #24 - thanks itiut!
