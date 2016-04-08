@@ -1,3 +1,6 @@
+## 0.7.2 - 2016-04-08
+* Fixed package disabling immediately in 1.7 beta #28
+
 ## 0.7.1 - 2016-04-06
 * Fixed next/previous diff starting from beginning of file after change #25
 

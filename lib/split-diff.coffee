@@ -34,9 +34,6 @@ module.exports = SplitDiff =
     @disable()
     @subscriptions.dispose()
 
-  serialize: ->
-    @disable()
-
   # gets two visible editors
   # auto opens new editors so there are two to diff with
   getVisibleEditors: ->
@@ -186,7 +183,7 @@ module.exports = SplitDiff =
     @diffChunkPointer = 0
     @isFirstChunkSelect = true
     @clearDiff()
-    
+
     if @editorSubscriptions?
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
