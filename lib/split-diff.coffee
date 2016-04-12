@@ -114,14 +114,7 @@ module.exports = SplitDiff =
     @editorSubscriptions.add editors.editor2.onDidDestroy =>
       @disable(true)
 
-    # update diff on any settings change
-    @editorSubscriptions.add atom.config.onDidChange 'split-diff.ignoreWhitespace', ({newValue, oldValue}) =>
-      @updateDiff(editors)
-    @editorSubscriptions.add atom.config.onDidChange 'split-diff.diffWords', ({newValue, oldValue}) =>
-      @updateDiff(editors)
-    @editorSubscriptions.add atom.config.onDidChange 'split-diff.leftEditorColor', ({newValue, oldValue}) =>
-      @updateDiff(editors)
-    @editorSubscriptions.add atom.config.onDidChange 'split-diff.rightEditorColor', ({newValue, oldValue}) =>
+    @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
       @updateDiff(editors)
 
     # manually update diff if there are already two editors
@@ -156,6 +149,7 @@ module.exports = SplitDiff =
 
     detailMsg = 'Ignore Whitespace: ' + @isWhitespaceIgnored
     detailMsg += '\nShow Word Diff: ' + @isWordDiffEnabled
+    detailMsg += '\nSync Horizontal Scroll: ' + @getConfig('syncHorizontalScroll')
     atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg, dismissable: false})
 
   # called by both diffPanes and the editor subscription to update the diff
@@ -165,6 +159,7 @@ module.exports = SplitDiff =
     @clearDiff()
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
     @isWordDiffEnabled = @getConfig('diffWords')
+    syncHorizontalScroll = @getConfig('syncHorizontalScroll')
 
     SplitDiffCompute = require './split-diff-compute'
     computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored)
@@ -176,7 +171,7 @@ module.exports = SplitDiff =
     if @isWordDiffEnabled
       @highlightWordDiff(SplitDiffCompute, @linkedDiffChunks)
 
-    @syncScroll = new SyncScroll(editors.editor1, editors.editor2)
+    @syncScroll = new SyncScroll(editors.editor1, editors.editor2, syncHorizontalScroll)
     @syncScroll.syncPositions()
 
   # called by "Disable" command

@@ -9,6 +9,11 @@ module.exports =
     description: 'Diffs the words between each line when this box is checked.'
     type: 'boolean'
     default: true
+  syncHorizontalScroll:
+    title: 'Sync Horizontal Scroll'
+    description: 'Syncs the horizontal scrolling of the editors.'
+    type: 'boolean'
+    default: false
   leftEditorColor:
     title: 'Left Editor Color'
     description: 'Specifies the highlight color for the left editor.'

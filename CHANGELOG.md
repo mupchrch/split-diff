@@ -2,6 +2,7 @@
 * Now using placeholder text to display help message #32
 * Fixed a bug where diff was updated twice on initial run
 * Fixed a bug where scroll was not synced on initial run
+* Added setting to sync horizontal scrolling #29
 
 ## 0.7.2 - 2016-04-08
 * Fixed package disabling immediately in 1.7 beta #28

@@ -26,6 +26,7 @@ To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 
 * **Ignore Whitespace** - Will not diff whitespace when this box is checked.
 * **Show Word Diff** - Diffs the words between each line when this box is checked.
+* **Sync Horizontal Scroll** - Syncs the horizontal scrolling of the editors.
 * **Left Editor Color** - Specifies the highlight color for the left editor.
 * **Right Editor Color** - Specifies the highlight color for the right editor.
 
