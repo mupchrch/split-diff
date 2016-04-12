@@ -1,3 +1,6 @@
+## 0.7.3 - 2016-04-11
+* Now using placeholder text to display help message #32
+
 ## 0.7.2 - 2016-04-08
 * Fixed package disabling immediately in 1.7 beta #28
 
