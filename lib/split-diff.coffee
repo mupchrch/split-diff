@@ -18,6 +18,7 @@ module.exports = SplitDiff =
   wasEditor1SoftWrapped: false
   wasEditor2SoftWrapped: false
   isEnabled: false
+  wasEditorCreated: false
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -53,10 +54,12 @@ module.exports = SplitDiff =
     # auto open editor panes so we have two to diff with
     if editor1 == null
       editor1 = atom.workspace.buildTextEditor()
+      @wasEditorCreated = true
       leftPane = atom.workspace.getActivePane()
       leftPane.addItem(editor1)
     if editor2 == null
       editor2 = atom.workspace.buildTextEditor()
+      @wasEditorCreated = true
       editor2.setGrammar(editor1.getGrammar())
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
@@ -117,7 +120,10 @@ module.exports = SplitDiff =
     @editorSubscriptions.add atom.config.onDidChange 'split-diff.rightEditorColor', ({newValue, oldValue}) =>
       @updateDiff(editors)
 
-    @updateDiff(editors)
+    # manually update diff if there are already two editors
+    # if editors were created, onDidStopChanging would fire this method
+    if !@wasEditorCreated
+      @updateDiff(editors)
 
     # add application menu items
     @editorSubscriptions.add atom.menu.add [
@@ -151,6 +157,7 @@ module.exports = SplitDiff =
   # called by both diffPanes and the editor subscription to update the diff
   # creates the scroll sync
   updateDiff: (editors) ->
+    console.log('update diff')
     @isEnabled = true
     @clearDiff()
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
@@ -182,6 +189,7 @@ module.exports = SplitDiff =
 
     @diffChunkPointer = 0
     @isFirstChunkSelect = true
+    @wasEditorCreated = false
     @clearDiff()
 
     if @editorSubscriptions?
