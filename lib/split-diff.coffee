@@ -87,6 +87,10 @@ module.exports = SplitDiff =
       @wasEditor2SoftWrapped = true
       editor2.setSoftWrapped(false)
 
+    # want to scroll a newly created editor to the first editor's position
+    if @wasEditorCreated
+      atom.views.getView(editor1).focus()
+
     editors =
       editor1: editor1
       editor2: editor2
@@ -157,7 +161,6 @@ module.exports = SplitDiff =
   # called by both diffPanes and the editor subscription to update the diff
   # creates the scroll sync
   updateDiff: (editors) ->
-    console.log('update diff')
     @isEnabled = true
     @clearDiff()
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
