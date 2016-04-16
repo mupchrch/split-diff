@@ -1,3 +1,7 @@
+## 0.7.4 - 2016-04-16
+* Fixed no paste help message for two empty editors #35
+* Added close pane and untitled file on toggle #30
+
 ## 0.7.3 - 2016-04-11
 * Now using placeholder text to display help message #32
 * Fixed a bug where diff was updated twice on initial run

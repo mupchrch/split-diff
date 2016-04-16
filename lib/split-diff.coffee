@@ -18,9 +18,9 @@ module.exports = SplitDiff =
   wasEditor1SoftWrapped: false
   wasEditor2SoftWrapped: false
   isEnabled: false
-  wasEditorCreated: false
-  editor1PlaceholderText: ''
-  editor2PlaceholderText: ''
+  wasEditor1Created: false
+  wasEditor2Created: false
+  hasGitRepo: false
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -56,12 +56,12 @@ module.exports = SplitDiff =
     # auto open editor panes so we have two to diff with
     if editor1 == null
       editor1 = atom.workspace.buildTextEditor()
-      @wasEditorCreated = true
+      @wasEditor1Created = true
       leftPane = atom.workspace.getActivePane()
       leftPane.addItem(editor1)
     if editor2 == null
       editor2 = atom.workspace.buildTextEditor()
-      @wasEditorCreated = true
+      @wasEditor2Created = true
       editor2.setGrammar(editor1.getGrammar())
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
@@ -69,13 +69,14 @@ module.exports = SplitDiff =
     editor1Path = editor1.getPath()
     # only show git changes if the right editor is empty
     if editor1Path? && (editor2.getLineCount() == 1 && editor2.lineTextForBufferRow(0) == '')
-      atom.project.repositoryForDirectory(new Directory(Path.dirname(editor1Path))).then(
-        (projectRepo) ->
+      for directory, i in atom.project.getDirectories()
+        if editor1Path is directory.getPath() or directory.contains(editor1Path)
+          projectRepo = atom.project.getRepositories()[i]
           if projectRepo?
             relativeEditor1Path = projectRepo.relativize(editor1Path)
-            #chunks = projectRepo.getLineDiffs(relativeEditor1Path, editor1.getText())
             editor2.setText(projectRepo.repo.getHeadBlob(relativeEditor1Path))
-      )
+            @hasGitRepo = true
+            break
 
     # unfold all lines so diffs properly align
     editor1.unfoldAll()
@@ -89,14 +90,8 @@ module.exports = SplitDiff =
       @wasEditor2SoftWrapped = true
       editor2.setSoftWrapped(false)
 
-    helpMsg = 'Paste what you want to diff here!'
-    @editor1PlaceholderText = editor1.getPlaceholderText()
-    editor1.setPlaceholderText(helpMsg)
-    @editor2PlaceholderText = editor2.getPlaceholderText()
-    editor2.setPlaceholderText(helpMsg)
-
     # want to scroll a newly created editor to the first editor's position
-    if @wasEditorCreated
+    if @wasEditor2Created
       atom.views.getView(editor1).focus()
 
     editors =
@@ -125,9 +120,8 @@ module.exports = SplitDiff =
     @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
       @updateDiff(editors)
 
-    # manually update diff if there are already two editors
-    # if editors were created, onDidStopChanging would fire this method
-    if !@wasEditorCreated
+    # update diff if there is no git repo (no onchange fired)
+    if !@hasGitRepo
       @updateDiff(editors)
 
     # add application menu items
@@ -186,26 +180,32 @@ module.exports = SplitDiff =
   # removes diff and sync scroll, disposes of subscriptions
   disable: (displayMsg) ->
     @isEnabled = false
-    if @diffViewEditor1?
-      if @wasEditor1SoftWrapped
-        @diffViewEditor1.enableSoftWrap()
-        @wasEditor1SoftWrapped = false
-      @diffViewEditor1.setPlaceholderText(@editor1PlaceholderText)
-
-    if @diffViewEditor2?
-      if @wasEditor2SoftWrapped
-        @diffViewEditor2.enableSoftWrap()
-        @wasEditor2SoftWrapped = false
-      @diffViewEditor2.setPlaceholderText(@editor2PlaceholderText)
-
-    @diffChunkPointer = 0
-    @isFirstChunkSelect = true
-    @wasEditorCreated = false
-    @clearDiff()
 
     if @editorSubscriptions?
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
+
+    if @diffViewEditor1?
+      if @wasEditor1SoftWrapped
+        @diffViewEditor1.enableSoftWrap()
+      if @wasEditor1Created
+        @diffViewEditor1.cleanUp()
+
+    if @diffViewEditor2?
+      if @wasEditor2SoftWrapped
+        @diffViewEditor2.enableSoftWrap()
+      if @wasEditor2Created
+        @diffViewEditor2.cleanUp()
+
+    @clearDiff()
+
+    @diffChunkPointer = 0
+    @isFirstChunkSelect = true
+    @wasEditor1SoftWrapped = false
+    @wasEditor1Created = false
+    @wasEditor2SoftWrapped = false
+    @wasEditor2Created = false
+    @hasGitRepo = false
 
     if displayMsg
       atom.notifications.addInfo('Split Diff Disabled', {dismissable: false})
