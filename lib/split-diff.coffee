@@ -19,6 +19,8 @@ module.exports = SplitDiff =
   wasEditor2SoftWrapped: false
   isEnabled: false
   wasEditorCreated: false
+  editor1PlaceholderText: ''
+  editor2PlaceholderText: ''
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -86,6 +88,12 @@ module.exports = SplitDiff =
     if editor2.isSoftWrapped()
       @wasEditor2SoftWrapped = true
       editor2.setSoftWrapped(false)
+
+    helpMsg = 'Paste what you want to diff here!'
+    @editor1PlaceholderText = editor1.getPlaceholderText()
+    editor1.setPlaceholderText(helpMsg)
+    @editor2PlaceholderText = editor2.getPlaceholderText()
+    editor2.setPlaceholderText(helpMsg)
 
     # want to scroll a newly created editor to the first editor's position
     if @wasEditorCreated
@@ -178,12 +186,17 @@ module.exports = SplitDiff =
   # removes diff and sync scroll, disposes of subscriptions
   disable: (displayMsg) ->
     @isEnabled = false
-    if @wasEditor1SoftWrapped
-      @diffViewEditor1.enableSoftWrap()
-      @wasEditor1SoftWrapped = false
-    if @wasEditor2SoftWrapped
-      @diffViewEditor2.enableSoftWrap()
-      @wasEditor2SoftWrapped = false
+    if @diffViewEditor1?
+      if @wasEditor1SoftWrapped
+        @diffViewEditor1.enableSoftWrap()
+        @wasEditor1SoftWrapped = false
+      @diffViewEditor1.setPlaceholderText(@editor1PlaceholderText)
+
+    if @diffViewEditor2?
+      if @wasEditor2SoftWrapped
+        @diffViewEditor2.enableSoftWrap()
+        @wasEditor2SoftWrapped = false
+      @diffViewEditor2.setPlaceholderText(@editor2PlaceholderText)
 
     @diffChunkPointer = 0
     @isFirstChunkSelect = true
