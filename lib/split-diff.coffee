@@ -160,19 +160,39 @@ module.exports = SplitDiff =
     @isEnabled = true
     @clearDiff()
     @isWhitespaceIgnored = @getConfig('ignoreWhitespace')
-    @isWordDiffEnabled = @getConfig('diffWords')
-    syncHorizontalScroll = @getConfig('syncHorizontalScroll')
 
     SplitDiffCompute = require './split-diff-compute'
-    computedDiff = SplitDiffCompute.computeDiff(editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored)
 
+    # --- kick off background process to compute diff ---
+    {BufferedNodeProcess} = require 'atom'
+    command = Path.resolve __dirname, "./compute-diff.js"
+    args = [editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored]
+    computedDiff = ''
+    theOutput = ''
+    stdout = (output) =>
+      theOutput = output
+      computedDiff = JSON.parse(output)
+    stderr = (err) =>
+      theOutput = err
+    exit = (code) =>
+      if code == 0
+        @resumeUpdateDiff(SplitDiffCompute, editors, computedDiff)
+      else
+        console.log('BufferedNodeProcess code was ' + code)
+        console.log(theOutput)
+    process = new BufferedNodeProcess({command, args, stdout, stderr, exit})
+    # --- kick off background process to compute diff ---
+
+  resumeUpdateDiff: (SplitDiffCompute, editors, computedDiff) ->
     @linkedDiffChunks = @evaluateDiffOrder(computedDiff.chunks)
 
     @displayDiff(editors, computedDiff)
 
+    @isWordDiffEnabled = @getConfig('diffWords')
     if @isWordDiffEnabled
       @highlightWordDiff(SplitDiffCompute, @linkedDiffChunks)
 
+    syncHorizontalScroll = @getConfig('syncHorizontalScroll')
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2, syncHorizontalScroll)
     @syncScroll.syncPositions()
 
