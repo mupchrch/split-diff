@@ -347,6 +347,18 @@ module.exports = SplitDiff =
         oldLineNumber += c.count
         newLineNumber += c.count
 
+    # add the prevChunk if the loop finished
+    if prevChunk? && prevChunk.added?
+      diffChunk =
+        newLineStart: (newLineNumber - prevChunk.count)
+        newLineEnd: newLineNumber
+      diffChunks.push(diffChunk)
+    else if prevChunk? && prevChunk.removed?
+      diffChunk =
+        oldLineStart: (oldLineNumber - prevChunk.count)
+        oldLineEnd: oldLineNumber
+      diffChunks.push(diffChunk)
+
     return diffChunks
 
   # highlights the word differences between lines
