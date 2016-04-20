@@ -1,8 +1,8 @@
-{CompositeDisposable, Directory} = require 'atom'
+{CompositeDisposable, Directory, File} = require 'atom'
 DiffViewEditor = require './build-lines'
 SyncScroll = require './sync-scroll'
 configSchema = require "./config-schema"
-Path = require 'path'
+path = require 'path'
 
 module.exports = SplitDiff =
   config: configSchema
@@ -21,6 +21,7 @@ module.exports = SplitDiff =
   wasEditor1Created: false
   wasEditor2Created: false
   hasGitRepo: false
+  process: null
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -34,7 +35,7 @@ module.exports = SplitDiff =
       'split-diff:toggle': => @toggle()
 
   deactivate: ->
-    @disable()
+    @disable(false)
     @subscriptions.dispose()
 
   # called by "toggle" command
@@ -162,18 +163,17 @@ module.exports = SplitDiff =
     atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg, dismissable: false})
 
   # called by both diffPanes and the editor subscription to update the diff
-  # creates the scroll sync
   updateDiff: (editors) ->
     @isEnabled = true
     @_clearDiff()
     @isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
 
-    SplitDiffCompute = require './split-diff-compute'
+    editorPaths = @_createTempFiles(editors)
 
     # --- kick off background process to compute diff ---
     {BufferedNodeProcess} = require 'atom'
-    command = Path.resolve __dirname, "./compute-diff.js"
-    args = [editors.editor1.getText(), editors.editor2.getText(), @isWhitespaceIgnored]
+    command = path.resolve __dirname, "./compute-diff.js"
+    args = [editorPaths.editor1Path, editorPaths.editor2Path, @isWhitespaceIgnored]
     computedDiff = ''
     theOutput = ''
     stdout = (output) =>
@@ -183,11 +183,11 @@ module.exports = SplitDiff =
       theOutput = err
     exit = (code) =>
       if code == 0
-        @_resumeUpdateDiff(SplitDiffCompute, editors, computedDiff)
+        @_resumeUpdateDiff(editors, computedDiff)
       else
         console.log('BufferedNodeProcess code was ' + code)
         console.log(theOutput)
-    process = new BufferedNodeProcess({command, args, stdout, stderr, exit})
+    @process = new BufferedNodeProcess({command, args, stdout, stderr, exit})
     # --- kick off background process to compute diff ---
 
   # gets two visible editors
@@ -219,17 +219,7 @@ module.exports = SplitDiff =
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
 
-    editor1Path = editor1.getPath()
-    # only show git changes if the right editor is empty
-    if editor1Path? && (editor2.getLineCount() == 1 && editor2.lineTextForBufferRow(0) == '')
-      for directory, i in atom.project.getDirectories()
-        if editor1Path is directory.getPath() or directory.contains(editor1Path)
-          projectRepo = atom.project.getRepositories()[i]
-          if projectRepo?
-            relativeEditor1Path = projectRepo.relativize(editor1Path)
-            editor2.setText(projectRepo.repo.getHeadBlob(relativeEditor1Path))
-            @hasGitRepo = true
-            break
+    @_setupGitRepo(editor1, editor2)
 
     # unfold all lines so diffs properly align
     editor1.unfoldAll()
@@ -253,14 +243,48 @@ module.exports = SplitDiff =
 
     return editors
 
-  _resumeUpdateDiff: (SplitDiffCompute, editors, computedDiff) ->
+  _setupGitRepo: (editor1, editor2) ->
+    editor1Path = editor1.getPath()
+    # only show git changes if the right editor is empty
+    if editor1Path? && (editor2.getLineCount() == 1 && editor2.lineTextForBufferRow(0) == '')
+      for directory, i in atom.project.getDirectories()
+        if editor1Path is directory.getPath() or directory.contains(editor1Path)
+          projectRepo = atom.project.getRepositories()[i]
+          if projectRepo?
+            relativeEditor1Path = projectRepo.relativize(editor1Path)
+            editor2.setText(projectRepo.repo.getHeadBlob(relativeEditor1Path))
+            @hasGitRepo = true
+            break
+
+  # creates temp files so the compute diff process can get the text easily
+  _createTempFiles: (editors) ->
+    editor1Path = ''
+    editor2Path = ''
+    tempFolderPath = atom.getConfigDirPath() + '/split-diff'
+
+    editor1Path = tempFolderPath + '/split-diff 1'
+    editor1TempFile = new File(editor1Path)
+    editor1TempFile.writeSync(editors.editor1.getText())
+
+    editor2Path = tempFolderPath + '/split-diff 2'
+    editor2TempFile = new File(editor2Path)
+    editor2TempFile.writeSync(editors.editor2.getText())
+
+    editorPaths =
+      editor1Path: editor1Path
+      editor2Path: editor2Path
+
+    return editorPaths
+
+  # resumes after the diff compute returns from its compute diff process
+  _resumeUpdateDiff: (editors, computedDiff) ->
     @linkedDiffChunks = @_evaluateDiffOrder(computedDiff.chunks)
 
     @_displayDiff(editors, computedDiff)
 
     @isWordDiffEnabled = @_getConfig('diffWords')
     if @isWordDiffEnabled
-      @_highlightWordDiff(SplitDiffCompute, @linkedDiffChunks)
+      @_highlightWordDiff(@linkedDiffChunks)
 
     syncHorizontalScroll = @_getConfig('syncHorizontalScroll')
     @syncScroll = new SyncScroll(editors.editor1, editors.editor2, syncHorizontalScroll)
@@ -280,6 +304,10 @@ module.exports = SplitDiff =
 
   # removes diff and sync scroll
   _clearDiff: ->
+    if @process?
+      @process.kill()
+      @process = null
+
     if @diffViewEditor1?
       @diffViewEditor1.destroyMarkers()
       @diffViewEditor1 = null
@@ -377,7 +405,8 @@ module.exports = SplitDiff =
     return diffChunks
 
   # highlights the word differences between lines
-  _highlightWordDiff: (SplitDiffCompute, chunks) ->
+  _highlightWordDiff: (chunks) ->
+    SplitDiffCompute = require './split-diff-compute'
     leftColor = @_getConfig('leftEditorColor')
     rightColor = @_getConfig('rightEditorColor')
     for c in chunks
