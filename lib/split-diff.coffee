@@ -165,7 +165,17 @@ module.exports = SplitDiff =
   # called by both diffPanes and the editor subscription to update the diff
   updateDiff: (editors) ->
     @isEnabled = true
-    @_clearDiff()
+
+    LoadingView = require './loading-view'
+    loadingView = new LoadingView()
+    modalPanel = atom.workspace.addModalPanel(item: loadingView.getElement(), visible: false)
+    modalPanel.item.parentNode.classList.add('split-diff-hide-mask')
+
+    # show loading popup after a delay
+    setTimeout ->
+      modalPanel.show()
+    , 1000
+
     @isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
 
     editorPaths = @_createTempFiles(editors)
@@ -182,6 +192,9 @@ module.exports = SplitDiff =
     stderr = (err) =>
       theOutput = err
     exit = (code) =>
+      loadingView.destroy()
+      modalPanel.destroy()
+
       if code == 0
         @_resumeUpdateDiff(editors, computedDiff)
       else
@@ -189,6 +202,21 @@ module.exports = SplitDiff =
         console.log(theOutput)
     @process = new BufferedNodeProcess({command, args, stdout, stderr, exit})
     # --- kick off background process to compute diff ---
+
+  # resumes after the compute diff process returns
+  _resumeUpdateDiff: (editors, computedDiff) ->
+    @linkedDiffChunks = @_evaluateDiffOrder(computedDiff.chunks)
+
+    @_clearDiff()
+    @_displayDiff(editors, computedDiff)
+
+    @isWordDiffEnabled = @_getConfig('diffWords')
+    if @isWordDiffEnabled
+      @_highlightWordDiff(@linkedDiffChunks)
+
+    syncHorizontalScroll = @_getConfig('syncHorizontalScroll')
+    @syncScroll = new SyncScroll(editors.editor1, editors.editor2, syncHorizontalScroll)
+    @syncScroll.syncPositions()
 
   # gets two visible editors
   # auto opens new editors so there are two to diff with
@@ -275,20 +303,6 @@ module.exports = SplitDiff =
       editor2Path: editor2Path
 
     return editorPaths
-
-  # resumes after the diff compute returns from its compute diff process
-  _resumeUpdateDiff: (editors, computedDiff) ->
-    @linkedDiffChunks = @_evaluateDiffOrder(computedDiff.chunks)
-
-    @_displayDiff(editors, computedDiff)
-
-    @isWordDiffEnabled = @_getConfig('diffWords')
-    if @isWordDiffEnabled
-      @_highlightWordDiff(@linkedDiffChunks)
-
-    syncHorizontalScroll = @_getConfig('syncHorizontalScroll')
-    @syncScroll = new SyncScroll(editors.editor1, editors.editor2, syncHorizontalScroll)
-    @syncScroll.syncPositions()
 
   _selectDiffs: (diffChunk) ->
     if diffChunk? && @diffViewEditor1? && @diffViewEditor2?
