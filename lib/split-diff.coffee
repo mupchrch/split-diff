@@ -420,7 +420,7 @@ module.exports = SplitDiff =
 
   # highlights the word differences between lines
   _highlightWordDiff: (chunks) ->
-    SplitDiffCompute = require './split-diff-compute'
+    ComputeWordDiff = require './compute-word-diff'
     leftColor = @_getConfig('leftEditorColor')
     rightColor = @_getConfig('rightEditorColor')
     for c in chunks
@@ -436,7 +436,7 @@ module.exports = SplitDiff =
           excessLines = (c.newLineEnd - c.newLineStart) - lineRange
         # figure out diff between lines and highlight
         for i in [0 ... lineRange] by 1
-          wordDiff = SplitDiffCompute.computeWordDiff(@diffViewEditor1.getLineText(c.oldLineStart + i), @diffViewEditor2.getLineText(c.newLineStart + i), @isWhitespaceIgnored)
+          wordDiff = ComputeWordDiff.computeWordDiff(@diffViewEditor1.getLineText(c.oldLineStart + i), @diffViewEditor2.getLineText(c.newLineStart + i), @isWhitespaceIgnored)
           if leftColor == 'green'
             @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'added', @isWhitespaceIgnored)
           else
