@@ -2,6 +2,7 @@
 * Improved highlighting performance
 * Fixed diffing huge files freezes editor #6
 * Added loading indicator for files that are taking over one second to diff
+* Fixed failure when diffing a file located in a git directory, but isn't tracked #36
 
 ## 0.7.4 - 2016-04-16
 * Fixed no paste help message for two empty editors #35

@@ -108,9 +108,10 @@ module.exports = SplitDiff =
 
     @_selectDiffs(@linkedDiffChunks[@diffChunkPointer])
 
-  # called by the command "enable" to do initial diff
+  # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
   diffPanes: ->
+    # in case enable was called again
     @disable(false)
 
     editors = @_getVisibleEditors()
@@ -280,9 +281,11 @@ module.exports = SplitDiff =
           projectRepo = atom.project.getRepositories()[i]
           if projectRepo?
             relativeEditor1Path = projectRepo.relativize(editor1Path)
-            editor2.setText(projectRepo.repo.getHeadBlob(relativeEditor1Path))
-            @hasGitRepo = true
-            break
+            gitHeadText = projectRepo.repo.getHeadBlob(relativeEditor1Path)
+            if gitHeadText?
+              editor2.setText(gitHeadText)
+              @hasGitRepo = true
+              break
 
   # creates temp files so the compute diff process can get the text easily
   _createTempFiles: (editors) ->
