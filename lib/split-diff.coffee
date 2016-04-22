@@ -1,5 +1,6 @@
 {CompositeDisposable, Directory, File} = require 'atom'
 DiffViewEditor = require './build-lines'
+LoadingView = require './loading-view'
 SyncScroll = require './sync-scroll'
 configSchema = require "./config-schema"
 path = require 'path'
@@ -22,6 +23,7 @@ module.exports = SplitDiff =
   wasEditor2Created: false
   hasGitRepo: false
   process: null
+  loadingView: null
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -167,14 +169,20 @@ module.exports = SplitDiff =
   updateDiff: (editors) ->
     @isEnabled = true
 
-    LoadingView = require './loading-view'
+    if @process?
+      @process.kill()
+      @process = null
+
     loadingView = new LoadingView()
-    modalPanel = atom.workspace.addModalPanel(item: loadingView.getElement(), visible: false)
-    modalPanel.item.parentNode.classList.add('split-diff-hide-mask')
+    loadingView.createModal()
+    # setTimeout needs a local reference, @loadingView is null inside that function
+    # but @loadingView is needed for clearDiff() so that the modal is cleared even if the process is killed
+    @loadingView = loadingView
 
     # show loading popup after a delay
     setTimeout ->
-      modalPanel.show()
+      if loadingView?
+        loadingView.show()
     , 1000
 
     @isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
@@ -193,8 +201,8 @@ module.exports = SplitDiff =
     stderr = (err) =>
       theOutput = err
     exit = (code) =>
-      loadingView.destroy()
-      modalPanel.destroy()
+      if loadingView?
+        loadingView.destroy()
 
       if code == 0
         @_resumeUpdateDiff(editors, computedDiff)
@@ -321,9 +329,9 @@ module.exports = SplitDiff =
 
   # removes diff and sync scroll
   _clearDiff: ->
-    if @process?
-      @process.kill()
-      @process = null
+    if @loadingView?
+      @loadingView.destroy()
+      @loadingView = null
 
     if @diffViewEditor1?
       @diffViewEditor1.destroyMarkers()

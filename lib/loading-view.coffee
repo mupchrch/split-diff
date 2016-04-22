@@ -21,6 +21,17 @@ class LoadingView
   # Tear down any state and detach
   destroy: ->
     @element.remove()
+    @modalPanel.destroy()
 
   getElement: ->
     @element
+
+  createModal: ->
+    @modalPanel = atom.workspace.addModalPanel(item: @element, visible: false)
+    @modalPanel.item.parentNode.classList.add('split-diff-hide-mask')
+
+  show: ->
+    @modalPanel.show()
+
+  hide: ->
+    @modalPanel.hide()

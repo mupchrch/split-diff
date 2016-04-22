@@ -1,4 +1,4 @@
-## X.X.X - ???
+## 0.7.5 - 2016-04-21
 * Improved highlighting performance
 * Fixed diffing huge files freezes editor #6
 * Added loading indicator for files that are taking over one second to diff

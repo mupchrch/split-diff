@@ -2,7 +2,7 @@
 
 Diffs text between two split panes. New panes are created if less than two panes exist upon run of the package.
 
-\*\* **Now automatically finds and displays diff of git changes!** \*\*
+\*\* **Supports diffing recent git changes!** \*\*
 
 ![Split Diff in action](https://github.com/mupchrch/split-diff/raw/master/demo.gif)
 
@@ -18,9 +18,6 @@ Diffs text between two split panes. New panes are created if less than two panes
 | `Move to Previous Diff` | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
 
 To stop diffing, simply close one of the panes *or* use the `Toggle` command.
-
-*This package will unfold all folded lines in order to properly align the diff.*
-*It will also temporarily turn off soft wrap in the two panes in order to properly align the diff.*
 
 ### Settings
 
