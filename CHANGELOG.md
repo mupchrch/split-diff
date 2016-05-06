@@ -1,3 +1,6 @@
+## 0.X.X - XXX
+* Added "Copy to Right" and "Copy to Left" commands, which partially adds #14
+
 ## 0.7.5 - 2016-04-21
 * Improved highlighting performance
 * Fixed diffing huge files freezes editor #6

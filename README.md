@@ -16,6 +16,8 @@ Diffs text between two split panes. New panes are created if less than two panes
 | `Ignore Whitespace` | Toggles the Ignore Whitespace setting. | ... |
 | `Move to Next Diff` | Scrolls to the next chunk of the diff and highlights it. | `ctrl-alt-n` |
 | `Move to Previous Diff` | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
+| `Copy to Right` | Copies all diff chunks containing a cursor to the right pane. | ... |
+| `Copy to Left` | Copies all diff chunks containing a cursor to the left pane. | ... |
 
 To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 
