@@ -112,6 +112,28 @@ module.exports = SplitDiff =
 
     @_selectDiffs(@linkedDiffChunks[@diffChunkPointer])
 
+  copyChunkToRight: () ->
+    linesToMove = @diffViewEditor1.getCursorDiffLines()
+    offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
+    for lineRange in linesToMove
+      for diffChunk in @linkedDiffChunks
+        if lineRange.start.row == diffChunk.oldLineStart
+          moveText = @diffViewEditor1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
+          @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
+          # offset will be the amount of lines to be copied minus the amount of lines overwritten
+          offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
+
+  copyChunkToLeft: () ->
+    linesToMove = @diffViewEditor2.getCursorDiffLines()
+    offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
+    for lineRange in linesToMove
+      for diffChunk in @linkedDiffChunks
+        if lineRange.start.row == diffChunk.oldLineStart
+          moveText = @diffViewEditor2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
+          @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
+          # offset will be the amount of lines to be copied minus the amount of lines overwritten
+          offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
+
   # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
   diffPanes: ->
@@ -218,28 +240,6 @@ module.exports = SplitDiff =
     @process = new BufferedNodeProcess({command, args, stdout, stderr, exit})
     # --- kick off background process to compute diff ---
 
-  copyChunkToRight: () ->
-    linesToMove = @diffViewEditor1.getCursorDiffLines()
-    offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
-    for lineRange in linesToMove
-      for diffChunk in @linkedDiffChunks
-        if lineRange.start.row == diffChunk.oldLineStart
-          moveText = @diffViewEditor1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
-          @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
-          # offset will be the amount of lines to be copied minus the amount of lines overwritten
-          offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
-
-  copyChunkToLeft: () ->
-    linesToMove = @diffViewEditor2.getCursorDiffLines()
-    offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
-    for lineRange in linesToMove
-      for diffChunk in @linkedDiffChunks
-        if lineRange.start.row == diffChunk.oldLineStart
-          moveText = @diffViewEditor2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
-          @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
-          # offset will be the amount of lines to be copied minus the amount of lines overwritten
-          offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
-
   # resumes after the compute diff process returns
   _resumeUpdateDiff: (editors, computedDiff) ->
     @linkedDiffChunks = @_evaluateDiffOrder(computedDiff.chunks)
@@ -314,7 +314,7 @@ module.exports = SplitDiff =
       for directory, i in atom.project.getDirectories()
         if editor1Path is directory.getPath() or directory.contains(editor1Path)
           projectRepo = atom.project.getRepositories()[i]
-          if projectRepo?
+          if projectRepo? && projectRepo.repo?
             relativeEditor1Path = projectRepo.relativize(editor1Path)
             gitHeadText = projectRepo.repo.getHeadBlob(relativeEditor1Path)
             if gitHeadText?
