@@ -292,7 +292,7 @@ module.exports = SplitDiff =
 
     # turn off soft wrap setting for these editors so diffs properly align
     if editor1.isSoftWrapped()
-      @wasEditor1SoftWrapped = truerrrrrrrrrr
+      @wasEditor1SoftWrapped = true
     if editor2.isSoftWrapped()
       @wasEditor2SoftWrapped = true
       editor2.setSoftWrapped(false)
