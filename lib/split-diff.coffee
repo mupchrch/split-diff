@@ -201,21 +201,15 @@ module.exports = SplitDiff =
       @process.kill()
       @process = null
 
-    loadingView = new LoadingView()
-    loadingView.createModal()
-    # setTimeout needs a local reference, @loadingView is null inside that function
-    # but @loadingView is needed for clearDiff() so that the modal is cleared even if the process is killed
-    @loadingView = loadingView
-
-    # show loading popup after a delay
-    popupTimeout = setTimeout ->
-      if loadingView?
-        loadingView.show()
-    , 1000
-
     @isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
 
     editorPaths = @_createTempFiles(editors)
+
+    # create the loading view if it doesn't exist yet
+    if !@loadingView?
+      @loadingView = new LoadingView()
+      @loadingView.createModal()
+    @loadingView.show()
 
     # --- kick off background process to compute diff ---
     {BufferedNodeProcess} = require 'atom'
@@ -229,12 +223,7 @@ module.exports = SplitDiff =
     stderr = (err) =>
       theOutput = err
     exit = (code) =>
-      if loadingView?
-        loadingView.destroy()
-        loadingView = null
-        @loadingView = null
-      # if diff was computed before loading modal appeared, then don't show modal
-      clearTimeout(popupTimeout)
+      @loadingView.hide()
 
       if code == 0
         @_resumeUpdateDiff(editors, computedDiff)
@@ -362,8 +351,7 @@ module.exports = SplitDiff =
   # removes diff and sync scroll
   _clearDiff: ->
     if @loadingView?
-      @loadingView.destroy()
-      @loadingView = null
+      @loadingView.hide()
 
     if @diffViewEditor1?
       @diffViewEditor1.destroyMarkers()

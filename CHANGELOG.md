@@ -1,7 +1,9 @@
+## 0.8.3 - 2016-05-16
+* Fixed loading modal appearing forever after diff computes quickly #47
+
 ## 0.8.2 - 2016-05-16
 * Fixed left editor remains soft wrapped #46
 * Fixed "Copy to Left" command not working #45
-* Fixed loading modal appearing forever after diff computes quickly #47
 
 ## 0.8.1 - 2016-05-14
 * Remove typo in main package file #44 - thanks valepu!
