@@ -208,7 +208,7 @@ module.exports = SplitDiff =
     @loadingView = loadingView
 
     # show loading popup after a delay
-    setTimeout ->
+    popupTimeout = setTimeout ->
       if loadingView?
         loadingView.show()
     , 1000
@@ -231,6 +231,10 @@ module.exports = SplitDiff =
     exit = (code) =>
       if loadingView?
         loadingView.destroy()
+        loadingView = null
+        @loadingView = null
+      # if diff was computed before loading modal appeared, then don't show modal
+      clearTimeout(popupTimeout)
 
       if code == 0
         @_resumeUpdateDiff(editors, computedDiff)
