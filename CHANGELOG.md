@@ -1,4 +1,4 @@
-## 0.X.X - XXX
+## 0.8.2 - 2016-05-16
 * Fixed left editor remains soft wrapped #46
 * Fixed "Copy to Left" command not working #45
 * Fixed loading modal appearing forever after diff computes quickly #47
