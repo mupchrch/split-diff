@@ -25,16 +25,25 @@ module.exports = SplitDiff =
   hasGitRepo: false
   process: null
   loadingView: null
+  copyHelpMsg: 'Place your cursor in a chunk first!'
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
 
     @subscriptions.add atom.commands.add 'atom-workspace',
       'split-diff:enable': => @diffPanes()
-      'split-diff:next-diff': => @nextDiff()
-      'split-diff:prev-diff': => @prevDiff()
-      'split-diff:copy-to-right': => @copyChunkToRight()
-      'split-diff:copy-to-left': => @copyChunkToLeft()
+      'split-diff:next-diff': =>
+        if @isEnabled
+          @nextDiff()
+      'split-diff:prev-diff': =>
+        if @isEnabled
+          @prevDiff()
+      'split-diff:copy-to-right': =>
+        if @isEnabled
+          @copyChunkToRight()
+      'split-diff:copy-to-left': =>
+        if @isEnabled
+          @copyChunkToLeft()
       'split-diff:disable': => @disable()
       'split-diff:ignore-whitespace': => @toggleIgnoreWhitespace()
       'split-diff:toggle': => @toggle()
@@ -90,7 +99,7 @@ module.exports = SplitDiff =
     @hasGitRepo = false
 
     if displayMsg
-      atom.notifications.addInfo('Split Diff Disabled', {dismissable: false})
+      atom.notifications.addInfo('Split Diff Disabled', {dismissable: false, icon: 'diff'})
 
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff
@@ -122,6 +131,10 @@ module.exports = SplitDiff =
 
   copyChunkToRight: ->
     linesToMove = @diffViewEditor1.getCursorDiffLines()
+
+    if linesToMove.length == 0
+      atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
+
     offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
     for lineRange in linesToMove
       for diffChunk in @linkedDiffChunks
@@ -138,6 +151,10 @@ module.exports = SplitDiff =
 
   copyChunkToLeft: ->
     linesToMove = @diffViewEditor2.getCursorDiffLines()
+
+    if linesToMove.length == 0
+      atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
+
     offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
     for lineRange in linesToMove
       for diffChunk in @linkedDiffChunks
@@ -215,7 +232,7 @@ module.exports = SplitDiff =
     detailMsg = 'Ignore Whitespace: ' + @isWhitespaceIgnored
     detailMsg += '\nShow Word Diff: ' + @isWordDiffEnabled
     detailMsg += '\nSync Horizontal Scroll: ' + @_getConfig('syncHorizontalScroll')
-    atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg, dismissable: false})
+    atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg, dismissable: false, icon: 'diff'})
 
   # called by both diffPanes and the editor subscription to update the diff
   updateDiff: (editors) ->
@@ -362,16 +379,16 @@ module.exports = SplitDiff =
     return editorPaths
 
   _selectDiffs: (diffChunk) ->
-    if diffChunk? && @diffViewEditor1? && @diffViewEditor2?
+    if diffChunk?
+      # deselect previous next/prev highlights
       @diffViewEditor1.deselectAllLines()
       @diffViewEditor2.deselectAllLines()
-
-      if diffChunk.oldLineStart?
-        @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
-        @diffViewEditor2.getEditor().scrollToBufferPosition([diffChunk.oldLineStart, 0])
-      if diffChunk.newLineStart?
-        @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
-        @diffViewEditor2.getEditor().scrollToBufferPosition([diffChunk.newLineStart, 0])
+      # highlight and scroll editor 1
+      @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
+      @diffViewEditor1.getEditor().scrollToBufferPosition([diffChunk.oldLineStart, 0])
+      # highlight and scroll editor 2
+      @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
+      @diffViewEditor2.getEditor().scrollToBufferPosition([diffChunk.newLineStart, 0])
 
   # removes diff and sync scroll
   _clearDiff: ->
