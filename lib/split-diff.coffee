@@ -116,7 +116,7 @@ module.exports = SplitDiff =
     else
       @isFirstChunkSelect = false
 
-    @_selectDiffs(@linkedDiffChunks[@diffChunkPointer])
+    @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
 
   # called by "Move to previous diff" command
   prevDiff: ->
@@ -127,7 +127,7 @@ module.exports = SplitDiff =
     else
       @isFirstChunkSelect = false
 
-    @_selectDiffs(@linkedDiffChunks[@diffChunkPointer])
+    @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
 
   copyChunkToRight: ->
     linesToMove = @diffViewEditor1.getCursorDiffLines()
@@ -378,7 +378,7 @@ module.exports = SplitDiff =
 
     return editorPaths
 
-  _selectDiffs: (diffChunk) ->
+  _selectDiffs: (diffChunk, selectionCount) ->
     if diffChunk?
       # deselect previous next/prev highlights
       @diffViewEditor1.deselectAllLines()
@@ -386,11 +386,11 @@ module.exports = SplitDiff =
       # highlight and scroll editor 1
       @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
       @diffViewEditor1.getEditor().setCursorBufferPosition([diffChunk.oldLineStart, 0], {autoscroll: true})
-      #@diffViewEditor1.getEditor().scrollToBufferPosition([diffChunk.oldLineStart, 0])
       # highlight and scroll editor 2
       @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
       @diffViewEditor2.getEditor().setCursorBufferPosition([diffChunk.newLineStart, 0], {autoscroll: true})
-      #@diffViewEditor2.getEditor().scrollToBufferPosition([diffChunk.newLineStart, 0])
+      # update selection counter
+      @splitDiffView.showSelectionCount(selectionCount+1)
 
   # removes diff and sync scroll
   _clearDiff: ->
