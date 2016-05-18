@@ -1,6 +1,7 @@
 {CompositeDisposable, Directory, File} = require 'atom'
 DiffViewEditor = require './build-lines'
 LoadingView = require './loading-view'
+SplitDiffUI = require './split-diff-ui'
 SyncScroll = require './sync-scroll'
 configSchema = require "./config-schema"
 path = require 'path'
@@ -55,6 +56,7 @@ module.exports = SplitDiff =
   disable: (displayMsg) ->
     @isEnabled = false
 
+    # remove listeners
     if @editorSubscriptions?
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
@@ -71,8 +73,14 @@ module.exports = SplitDiff =
       if @wasEditor2Created
         @diffViewEditor2.cleanUp()
 
+    # remove bottom panel
+    if @splitDiffView?
+      @splitDiffView.destroy()
+      @splitDiffView = null
+
     @_clearDiff()
 
+    # reset all variables
     @diffChunkPointer = 0
     @isFirstChunkSelect = true
     @wasEditor1SoftWrapped = false
@@ -112,24 +120,34 @@ module.exports = SplitDiff =
 
     @_selectDiffs(@linkedDiffChunks[@diffChunkPointer])
 
-  copyChunkToRight: () ->
+  copyChunkToRight: ->
     linesToMove = @diffViewEditor1.getCursorDiffLines()
     offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
     for lineRange in linesToMove
       for diffChunk in @linkedDiffChunks
         if lineRange.start.row == diffChunk.oldLineStart
           moveText = @diffViewEditor1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
+          lastBufferRow = @diffViewEditor2.getEditor().getLastBufferRow()
+          # insert new line if the chunk we want to copy will be below the last line of the other editor
+          if (diffChunk.newLineStart + offset) > lastBufferRow
+            @diffViewEditor2.getEditor().setSelectedBufferRange([[lastBufferRow, 0], [lastBufferRow, 0]], '')
+            @diffViewEditor2.getEditor().insertNewline()
           @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
           # offset will be the amount of lines to be copied minus the amount of lines overwritten
           offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
 
-  copyChunkToLeft: () ->
+  copyChunkToLeft: ->
     linesToMove = @diffViewEditor2.getCursorDiffLines()
     offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
     for lineRange in linesToMove
       for diffChunk in @linkedDiffChunks
         if lineRange.start.row == diffChunk.newLineStart
           moveText = @diffViewEditor2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
+          lastBufferRow = @diffViewEditor1.getEditor().getLastBufferRow()
+          # insert new line if the chunk we want to copy will be below the last line of the other editor
+          if (diffChunk.oldLineStart + offset) > lastBufferRow
+            @diffViewEditor1.getEditor().setSelectedBufferRange([[lastBufferRow, 0], [lastBufferRow, 0]], '')
+            @diffViewEditor1.getEditor().insertNewline()
           @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
           # offset will be the amount of lines to be copied minus the amount of lines overwritten
           offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
@@ -142,6 +160,7 @@ module.exports = SplitDiff =
 
     editors = @_getVisibleEditors()
 
+    # add listeners
     @editorSubscriptions = new CompositeDisposable()
     @editorSubscriptions.add editors.editor1.onDidStopChanging =>
       @updateDiff(editors)
@@ -151,9 +170,14 @@ module.exports = SplitDiff =
       @disable(true)
     @editorSubscriptions.add editors.editor2.onDidDestroy =>
       @disable(true)
-
     @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
       @updateDiff(editors)
+
+    # add the bottom UI panel
+    if !@splitDiffView?
+      @splitDiffView = new SplitDiffUI()
+      @splitDiffView.createPanel()
+    @splitDiffView.show()
 
     # update diff if there is no git repo (no onchange fired)
     if !@hasGitRepo
@@ -223,7 +247,7 @@ module.exports = SplitDiff =
     stderr = (err) =>
       theOutput = err
     exit = (code) =>
-      @loadingView.hide()
+      @loadingView?.hide()
 
       if code == 0
         @_resumeUpdateDiff(editors, computedDiff)
@@ -236,6 +260,7 @@ module.exports = SplitDiff =
   # resumes after the compute diff process returns
   _resumeUpdateDiff: (editors, computedDiff) ->
     @linkedDiffChunks = @_evaluateDiffOrder(computedDiff.chunks)
+    @splitDiffView?.setNumDifferences(@linkedDiffChunks.length)
 
     @_clearDiff()
     @_displayDiff(editors, computedDiff)
@@ -350,8 +375,7 @@ module.exports = SplitDiff =
 
   # removes diff and sync scroll
   _clearDiff: ->
-    if @loadingView?
-      @loadingView.hide()
+    @loadingView?.hide()
 
     if @diffViewEditor1?
       @diffViewEditor1.destroyMarkers()
@@ -444,9 +468,13 @@ module.exports = SplitDiff =
       diffChunk =
         newLineStart: (newLineNumber - prevChunk.count)
         newLineEnd: newLineNumber
+        oldLineStart: oldLineNumber
+        oldLineEnd: oldLineNumber
       diffChunks.push(diffChunk)
     else if prevChunk? && prevChunk.removed?
       diffChunk =
+        newLineStart: newLineNumber
+        newLineEnd: newLineNumber
         oldLineStart: (oldLineNumber - prevChunk.count)
         oldLineEnd: oldLineNumber
       diffChunks.push(diffChunk)

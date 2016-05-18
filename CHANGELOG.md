@@ -1,3 +1,7 @@
+## X.X.X - XXXX-XX-XX
+* Added a user interface!
+* Fixed error when trying to copy last chunk when it didn't have a match #50
+
 ## 0.8.3 - 2016-05-16
 * Fixed loading modal appearing forever after diff computes quickly #47
 

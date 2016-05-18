@@ -1,4 +1,5 @@
 @import "syntax-variables";
+@import "octicon-mixins";
 
 atom-text-editor, atom-text-editor::shadow {
   .gutter .line-number,
@@ -50,4 +51,30 @@ atom-text-editor, atom-text-editor::shadow {
 
 .split-diff-hide-mask:after {
   display: none;
+}
+
+// bottom panel UI
+.split-diff-ui {
+  .num-diff-value,
+  .num-diff-text {
+    display: inline-block;
+    padding-right: 0.2em;
+  }
+
+  .copy-to-left {
+    .octicon(clippy);
+  }
+
+  .copy-to-right {
+    .octicon(clippy);
+    transform: scaleX(-1);
+  }
+
+  .prev-diff {
+    .octicon(chevron-up);
+  }
+
+  .next-diff {
+    .octicon(chevron-down);
+  }
 }
