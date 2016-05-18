@@ -143,7 +143,7 @@ module.exports = SplitDiff =
           lastBufferRow = @diffViewEditor2.getEditor().getLastBufferRow()
           # insert new line if the chunk we want to copy will be below the last line of the other editor
           if (diffChunk.newLineStart + offset) > lastBufferRow
-            @diffViewEditor2.getEditor().setSelectedBufferRange([[lastBufferRow, 0], [lastBufferRow, 0]], '')
+            @diffViewEditor2.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
             @diffViewEditor2.getEditor().insertNewline()
           @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
           # offset will be the amount of lines to be copied minus the amount of lines overwritten
@@ -163,7 +163,7 @@ module.exports = SplitDiff =
           lastBufferRow = @diffViewEditor1.getEditor().getLastBufferRow()
           # insert new line if the chunk we want to copy will be below the last line of the other editor
           if (diffChunk.oldLineStart + offset) > lastBufferRow
-            @diffViewEditor1.getEditor().setSelectedBufferRange([[lastBufferRow, 0], [lastBufferRow, 0]], '')
+            @diffViewEditor1.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
             @diffViewEditor1.getEditor().insertNewline()
           @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
           # offset will be the amount of lines to be copied minus the amount of lines overwritten
@@ -385,10 +385,12 @@ module.exports = SplitDiff =
       @diffViewEditor2.deselectAllLines()
       # highlight and scroll editor 1
       @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
-      @diffViewEditor1.getEditor().scrollToBufferPosition([diffChunk.oldLineStart, 0])
+      @diffViewEditor1.getEditor().setCursorBufferPosition([diffChunk.oldLineStart, 0], {autoscroll: true})
+      #@diffViewEditor1.getEditor().scrollToBufferPosition([diffChunk.oldLineStart, 0])
       # highlight and scroll editor 2
       @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
-      @diffViewEditor2.getEditor().scrollToBufferPosition([diffChunk.newLineStart, 0])
+      @diffViewEditor2.getEditor().setCursorBufferPosition([diffChunk.newLineStart, 0], {autoscroll: true})
+      #@diffViewEditor2.getEditor().scrollToBufferPosition([diffChunk.newLineStart, 0])
 
   # removes diff and sync scroll
   _clearDiff: ->

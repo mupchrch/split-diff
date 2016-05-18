@@ -14,10 +14,10 @@ Diffs text between two split panes. New panes are created if less than two panes
 | ------- | ------ | --------------- |
 | `Toggle` | Toggles a diff of the text between two side-by-side panes. Creates panes as necessary. Displays git changes if there is a repository found. | ... |
 | `Ignore Whitespace` | Toggles the Ignore Whitespace setting. | ... |
-| `Move to Next Diff` | Scrolls to the next chunk of the diff and highlights it. | `ctrl-alt-n` |
-| `Move to Previous Diff` | Scrolls to the previous chunk of the diff and highlights it. | `ctrl-alt-p` |
-| `Copy to Right` | Copies all diff chunks containing a cursor to the right pane. | ... |
-| `Copy to Left` | Copies all diff chunks containing a cursor to the left pane. | ... |
+| `Move to Next Diff` | Highlights the next difference. Moves the cursor so it can be easily copied. | `ctrl-alt-n` |
+| `Move to Previous Diff` | Highlights the previous difference. Moves the cursor so it can be easily copied. | `ctrl-alt-p` |
+| `Copy to Right` | Copies all differences containing a cursor to the right pane. | ... |
+| `Copy to Left` | Copies all differences containing a cursor to the left pane. | ... |
 
 To stop diffing, simply close one of the panes *or* use the `Toggle` command.
 
