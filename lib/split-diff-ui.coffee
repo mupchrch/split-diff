@@ -88,21 +88,27 @@ class SplitDiffUI
     # add container to UI
     @element.appendChild(@selectionCount)
 
+    # create ignore whitespace checkbox
     ignoreWhitespaceValue = document.createElement('input')
     ignoreWhitespaceValue.type = 'checkbox'
     ignoreWhitespaceValue.id = 'ignore-whitespace-checkbox'
+    # set checkbox value to current package ignore whitespace setting
     ignoreWhitespaceValue.checked = isWhitespaceIgnored
+    # register command to checkbox
     ignoreWhitespaceValue.addEventListener('change', () ->
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:ignore-whitespace')
     )
+    # create ignore whitespace label
     ignoreWhitespaceLabel = document.createElement('label')
     ignoreWhitespaceLabel.htmlFor = 'ignore-whitespace-checkbox'
     ignoreWhitespaceLabel.textContent = 'Ignore Whitespace'
-
+    # create ignore whitespace container
     settings = document.createElement('div')
     settings.classList.add('settings')
+    # add items to container
     settings.appendChild(ignoreWhitespaceValue)
     settings.appendChild(ignoreWhitespaceLabel)
+    # add container to UI
     @element.appendChild(settings)
 
   # Tear down any state and detach
