@@ -55,8 +55,14 @@ atom-text-editor, atom-text-editor::shadow {
 
 // bottom panel UI
 .split-diff-ui {
-  span {
-    padding-right: 0.3em;
+  .num-diff,
+  .selection-count,
+  .settings {
+    display: inline-block;
+  }
+
+  .hidden {
+    visibility: hidden;
   }
 
   .copy-to-left {
@@ -74,5 +80,21 @@ atom-text-editor, atom-text-editor::shadow {
 
   .next-diff {
     .octicon(chevron-down);
+  }
+
+  /* hide the checkbox */
+  input[type=checkbox] {
+    display:none;
+  }
+  /* unchecked icon */
+  input[type=checkbox] + label:before {
+    font-family: 'Octicons Regular';
+    display: inline-block;
+    content: '\f081';
+    cursor: pointer;
+  }
+  /* checked icon */
+  input[type=checkbox]:checked + label:before {
+    content: '\f03a';
   }
 }

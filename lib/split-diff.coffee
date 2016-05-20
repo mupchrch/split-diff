@@ -192,7 +192,7 @@ module.exports = SplitDiff =
 
     # add the bottom UI panel
     if !@splitDiffView?
-      @splitDiffView = new SplitDiffUI()
+      @splitDiffView = new SplitDiffUI(@isWhitespaceIgnored)
       @splitDiffView.createPanel()
     @splitDiffView.show()
 
