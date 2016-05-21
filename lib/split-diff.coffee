@@ -12,8 +12,6 @@ module.exports = SplitDiff =
   diffViewEditor1: null
   diffViewEditor2: null
   editorSubscriptions: null
-  isWhitespaceIgnored: false
-  isWordDiffEnabled: true
   linkedDiffChunks: null
   diffChunkPointer: 0
   isFirstChunkSelect: true
@@ -104,8 +102,8 @@ module.exports = SplitDiff =
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff
   toggleIgnoreWhitespace: ->
-    @_setConfig('ignoreWhitespace', !@isWhitespaceIgnored)
-    @isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
+    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
+    @_setConfig('ignoreWhitespace', !isWhitespaceIgnored)
 
   # called by "Move to next diff" command
   nextDiff: ->
@@ -190,9 +188,12 @@ module.exports = SplitDiff =
     @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
       @updateDiff(editors)
 
+    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
+    isWordDiffEnabled = @_getConfig('diffWords')
+
     # add the bottom UI panel
     if !@splitDiffView?
-      @splitDiffView = new SplitDiffUI(@isWhitespaceIgnored)
+      @splitDiffView = new SplitDiffUI(isWhitespaceIgnored)
       @splitDiffView.createPanel()
     @splitDiffView.show()
 
@@ -229,8 +230,8 @@ module.exports = SplitDiff =
       }]
     }
 
-    detailMsg = 'Ignore Whitespace: ' + @isWhitespaceIgnored
-    detailMsg += '\nShow Word Diff: ' + @isWordDiffEnabled
+    detailMsg = 'Ignore Whitespace: ' + isWhitespaceIgnored
+    detailMsg += '\nShow Word Diff: ' + isWordDiffEnabled
     detailMsg += '\nSync Horizontal Scroll: ' + @_getConfig('syncHorizontalScroll')
     atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg, dismissable: false, icon: 'diff'})
 
@@ -242,7 +243,7 @@ module.exports = SplitDiff =
       @process.kill()
       @process = null
 
-    @isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
+    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
 
     editorPaths = @_createTempFiles(editors)
 
@@ -255,7 +256,7 @@ module.exports = SplitDiff =
     # --- kick off background process to compute diff ---
     {BufferedNodeProcess} = require 'atom'
     command = path.resolve __dirname, "./compute-diff.js"
-    args = [editorPaths.editor1Path, editorPaths.editor2Path, @isWhitespaceIgnored]
+    args = [editorPaths.editor1Path, editorPaths.editor2Path, isWhitespaceIgnored]
     computedDiff = ''
     theOutput = ''
     stdout = (output) =>
@@ -282,8 +283,8 @@ module.exports = SplitDiff =
     @_clearDiff()
     @_displayDiff(editors, computedDiff)
 
-    @isWordDiffEnabled = @_getConfig('diffWords')
-    if @isWordDiffEnabled
+    isWordDiffEnabled = @_getConfig('diffWords')
+    if isWordDiffEnabled
       @_highlightWordDiff(@linkedDiffChunks)
 
     syncHorizontalScroll = @_getConfig('syncHorizontalScroll')
@@ -505,6 +506,7 @@ module.exports = SplitDiff =
     ComputeWordDiff = require './compute-word-diff'
     leftColor = @_getConfig('leftEditorColor')
     rightColor = @_getConfig('rightEditorColor')
+    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
     for c in chunks
       # make sure this chunk matches to another
       if c.newLineStart? && c.oldLineStart?
@@ -518,44 +520,44 @@ module.exports = SplitDiff =
           excessLines = (c.newLineEnd - c.newLineStart) - lineRange
         # figure out diff between lines and highlight
         for i in [0 ... lineRange] by 1
-          wordDiff = ComputeWordDiff.computeWordDiff(@diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i), @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i), @isWhitespaceIgnored)
+          wordDiff = ComputeWordDiff.computeWordDiff(@diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i), @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i), isWhitespaceIgnored)
           if leftColor == 'green'
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'added', @isWhitespaceIgnored)
+            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'removed', @isWhitespaceIgnored)
+            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'removed', isWhitespaceIgnored)
           if rightColor == 'green'
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'added', @isWhitespaceIgnored)
+            @diffViewEditor2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'removed', @isWhitespaceIgnored)
+            @diffViewEditor2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'removed', isWhitespaceIgnored)
         # fully highlight extra lines
         for j in [0 ... excessLines] by 1
           # check whether excess line is in editor1 or editor2
           if (c.newLineEnd - c.newLineStart) < (c.oldLineEnd - c.oldLineStart)
             if leftColor == 'green'
-              @diffViewEditor1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'added', @isWhitespaceIgnored)
+              @diffViewEditor1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
             else
-              @diffViewEditor1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'removed', @isWhitespaceIgnored)
+              @diffViewEditor1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
           else if (c.newLineEnd - c.newLineStart) > (c.oldLineEnd - c.oldLineStart)
             if rightColor == 'green'
-              @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'added', @isWhitespaceIgnored)
+              @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
             else
-              @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'removed', @isWhitespaceIgnored)
+              @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
       else if c.newLineStart?
         # fully highlight chunks that don't match up to another
         lineRange = c.newLineEnd - c.newLineStart
         for i in [0 ... lineRange] by 1
           if rightColor == 'green'
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'added', @isWhitespaceIgnored)
+            @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'removed', @isWhitespaceIgnored)
+            @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'removed', isWhitespaceIgnored)
       else if c.oldLineStart?
         # fully highlight chunks that don't match up to another
         lineRange = c.oldLineEnd - c.oldLineStart
         for i in [0 ... lineRange] by 1
           if leftColor == 'green'
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'added', @isWhitespaceIgnored)
+            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'removed', @isWhitespaceIgnored)
+            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'removed', isWhitespaceIgnored)
 
 
   _getConfig: (config) ->
