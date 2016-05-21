@@ -1,5 +1,5 @@
 ## X.X.X - XXXX-XX-XX
-* Added a user interface in the form of a bottom panel!
+* Added a user interface!
 * Added help notification when user fails the copy command
 * Changed next/prev diff command to move cursor with it so copy commands are easy #51
 * Fixed error when trying to copy last chunk when it didn't have a match #50

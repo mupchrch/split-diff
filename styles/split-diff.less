@@ -40,6 +40,7 @@ atom-text-editor, atom-text-editor::shadow {
   display: inline-block;
 }
 
+/* loading icon */
 .split-diff-icon {
   background-image: url('images/octocat-spinner-128.gif');
   background-repeat: no-repeat;
@@ -55,46 +56,86 @@ atom-text-editor, atom-text-editor::shadow {
 
 // bottom panel UI
 .split-diff-ui {
+  padding: 2px 10px 2px 10px;
+  display: flex;
+  justify-content: space-between;
+
+  /* hard code width so mid column is actually in middle */
+  .left {
+    width: 300px;
+  }
+  .mid {
+    text-align: center;
+  }
+  /* hard code width so mid column is actually in middle */
+  .right {
+    display: flex;
+    width: 300px;
+  }
+
   .num-diff,
   .selection-count,
-  .settings {
+  .selection-divider,
+  .num-diff-text {
     display: inline-block;
+    margin-left: 0.5em;
+    font-size: 1rem;
   }
 
-  .hidden {
-    visibility: hidden;
+  .selection-count,
+  .num-diff {
+    vertical-align: middle;
   }
 
+  /* buttons */
   .copy-to-left {
     .octicon(clippy);
   }
-
   .copy-to-right {
     .octicon(clippy);
     transform: scaleX(-1);
   }
-
   .prev-diff {
     .octicon(chevron-up);
   }
-
   .next-diff {
     .octicon(chevron-down);
   }
+  /* button spacing */
+  .prev-diff,
+  .next-diff,
+  .copy-to-left {
+    margin-right: 0.5rem;
+  }
 
+  /* label for checkbox */
+  .ignore-whitespace-label {
+    align-self: center;
+    margin-left: auto;
+    margin-bottom: 0;
+    background-color: rgba(1, 1, 1, 0.3);
+    cursor: pointer;
+    padding-right: 4px;
+  }
   /* hide the checkbox */
   input[type=checkbox] {
     display:none;
   }
   /* unchecked icon */
   input[type=checkbox] + label:before {
-    font-family: 'Octicons Regular';
-    display: inline-block;
     content: '\f081';
-    cursor: pointer;
   }
   /* checked icon */
   input[type=checkbox]:checked + label:before {
     content: '\f03a';
+  }
+  /* shared styling for checkbox :before element */
+  label:before {
+    font-family: 'Octicons Regular';
+    display: inline-block;
+    cursor: pointer;
+    padding: 0 0.5rem;
+    font-size: 1rem;
+    margin-right: 0.5rem;
   }
 }

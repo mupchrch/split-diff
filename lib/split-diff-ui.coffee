@@ -1,46 +1,18 @@
 module.exports =
 class SplitDiffUI
   constructor: (isWhitespaceIgnored) ->
-    # create root element
+    # create root UI element
     @element = document.createElement('div')
     @element.classList.add('split-diff-ui')
 
-    # create number of differences value
-    @numDifferencesValue = document.createElement('span')
-    @numDifferencesValue.classList.add('num-diff-value')
-    # create number of differences text
-    numDifferencesText = document.createElement('span')
-    numDifferencesText.textContent = 'differences found.'
-    numDifferencesText.classList.add('num-diff-text')
-    # create number of differences container
-    numDifferences = document.createElement('div')
-    numDifferences.classList.add('num-diff')
-    # add items to container
-    numDifferences.appendChild(@numDifferencesValue)
-    numDifferences.appendChild(numDifferencesText)
-    # add container to UI
-    @element.appendChild(numDifferences)
+    # ------------
+    # LEFT COLUMN |
+    # ------------
 
-    # create copy to left button
-    copyToLeftButton = document.createElement('button')
-    copyToLeftButton.classList.add('btn')
-    copyToLeftButton.classList.add('btn-sm')
-    copyToLeftButton.classList.add('copy-to-left')
-    copyToLeftButton.onclick = () ->
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:copy-to-left')
-    copyToLeftButton.title = 'Copy to Left'
-    # create copy to right button
-    copyToRightButton = document.createElement('button')
-    copyToRightButton.classList.add('btn')
-    copyToRightButton.classList.add('btn-sm')
-    copyToRightButton.classList.add('copy-to-right')
-    copyToRightButton.onclick = () ->
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:copy-to-right')
-    copyToRightButton.title = 'Copy to Right'
     # create prev diff button
     prevDiffButton = document.createElement('button')
     prevDiffButton.classList.add('btn')
-    prevDiffButton.classList.add('btn-sm')
+    prevDiffButton.classList.add('btn-md')
     prevDiffButton.classList.add('prev-diff')
     prevDiffButton.onclick = () ->
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:prev-diff')
@@ -48,21 +20,11 @@ class SplitDiffUI
     # create next diff button
     nextDiffButton = document.createElement('button')
     nextDiffButton.classList.add('btn')
-    nextDiffButton.classList.add('btn-sm')
+    nextDiffButton.classList.add('btn-md')
     nextDiffButton.classList.add('next-diff')
     nextDiffButton.onclick = () ->
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:next-diff')
     nextDiffButton.title = 'Move to Next Diff'
-    # create button group
-    buttonsGroup = document.createElement('div')
-    buttonsGroup.classList.add('btn-group')
-    # add buttons to button group
-    buttonsGroup.appendChild(copyToLeftButton)
-    buttonsGroup.appendChild(copyToRightButton)
-    buttonsGroup.appendChild(prevDiffButton)
-    buttonsGroup.appendChild(nextDiffButton)
-    # add button group to UI
-    @element.appendChild(buttonsGroup)
 
     # create selection counter
     @selectionCountValue = document.createElement('span')
@@ -73,10 +35,6 @@ class SplitDiffUI
     selectionDivider.textContent = '/'
     selectionDivider.classList.add('selection-divider')
     @element.appendChild(selectionDivider)
-    # create selection total
-    @selectionTotal = document.createElement('span')
-    @selectionTotal.classList.add('selection-total')
-    @element.appendChild(@selectionTotal)
     # create selection count container
     @selectionCount = document.createElement('div')
     @selectionCount.classList.add('selection-count')
@@ -84,9 +42,63 @@ class SplitDiffUI
     # add items to container
     @selectionCount.appendChild(@selectionCountValue)
     @selectionCount.appendChild(selectionDivider)
-    @selectionCount.appendChild(@selectionTotal)
+
+    # create number of differences value
+    @numDifferencesValue = document.createElement('span')
+    @numDifferencesValue.classList.add('num-diff-value')
+    @numDifferencesValue.textContent = '...'
+    # create number of differences text
+    numDifferencesText = document.createElement('span')
+    numDifferencesText.textContent = 'differences'
+    numDifferencesText.classList.add('num-diff-text')
+    # create number of differences container
+    numDifferences = document.createElement('div')
+    numDifferences.classList.add('num-diff')
+    # add items to container
+    numDifferences.appendChild(@numDifferencesValue)
+    numDifferences.appendChild(numDifferencesText)
+    # create left column and add prev/next buttons and number of differences text
+    left = document.createElement('div')
+    left.classList.add('left')
+    left.appendChild(prevDiffButton)
+    left.appendChild(nextDiffButton)
+    left.appendChild(@selectionCount)
+    left.appendChild(numDifferences)
     # add container to UI
-    @element.appendChild(@selectionCount)
+    @element.appendChild(left)
+
+    # -----------
+    # MID COLUMN |
+    # -----------
+
+    # create copy to left button
+    copyToLeftButton = document.createElement('button')
+    copyToLeftButton.classList.add('btn')
+    copyToLeftButton.classList.add('btn-md')
+    copyToLeftButton.classList.add('copy-to-left')
+    copyToLeftButton.onclick = () ->
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:copy-to-left')
+    copyToLeftButton.title = 'Copy to Left'
+    # create copy to right button
+    copyToRightButton = document.createElement('button')
+    copyToRightButton.classList.add('btn')
+    copyToRightButton.classList.add('btn-md')
+    copyToRightButton.classList.add('copy-to-right')
+    copyToRightButton.onclick = () ->
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:copy-to-right')
+    copyToRightButton.title = 'Copy to Right'
+    # create mid column
+    mid = document.createElement('div')
+    #mid.classList.add('btn-group')
+    mid.classList.add('mid')
+    # add buttons to button group
+    mid.appendChild(copyToLeftButton)
+    mid.appendChild(copyToRightButton)
+    @element.appendChild(mid)
+
+    # -------------
+    # RIGHT COLUMN |
+    # -------------
 
     # create ignore whitespace checkbox
     ignoreWhitespaceValue = document.createElement('input')
@@ -100,16 +112,17 @@ class SplitDiffUI
     )
     # create ignore whitespace label
     ignoreWhitespaceLabel = document.createElement('label')
+    ignoreWhitespaceLabel.classList.add('ignore-whitespace-label')
     ignoreWhitespaceLabel.htmlFor = 'ignore-whitespace-checkbox'
     ignoreWhitespaceLabel.textContent = 'Ignore Whitespace'
-    # create ignore whitespace container
-    settings = document.createElement('div')
-    settings.classList.add('settings')
+    # create right column
+    right = document.createElement('div')
+    right.classList.add('right')
     # add items to container
-    settings.appendChild(ignoreWhitespaceValue)
-    settings.appendChild(ignoreWhitespaceLabel)
-    # add container to UI
-    @element.appendChild(settings)
+    right.appendChild(ignoreWhitespaceValue)
+    right.appendChild(ignoreWhitespaceLabel)
+    # add settings to UI
+    @element.appendChild(right)
 
   # Tear down any state and detach
   destroy: ->
@@ -128,10 +141,12 @@ class SplitDiffUI
   hide: ->
     @footerPanel.hide()
 
+  # set the number of differences value
   setNumDifferences: (num) ->
     @numDifferencesValue.textContent = num
-    @selectionTotal.textContent = num
 
+  # show the selection counter next to the number of differences
+  # it will turn 'Y differences' into 'X / Y differences'
   showSelectionCount: (count) ->
     @selectionCountValue.textContent = count
     @selectionCount.classList.remove('hidden')
