@@ -4,6 +4,7 @@
 * Changed next/prev diff command to move cursor with it so copy commands are easy #51
 * Fixed error when trying to copy last chunk when it didn't have a match #50
 * Fixed ignore whitespace not affecting the diff outcome #52
+* Fixed Uncaught TypeError when trying to highlight word diff #49
 
 ## 0.8.3 - 2016-05-16
 * Fixed loading modal appearing forever after diff computes quickly #47
