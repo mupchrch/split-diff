@@ -1,6 +1,7 @@
-## X.X.X - XXXX-XX-XX
+## 1.0.0 - XXXX-XX-XX
 * Added a user interface!
 * Added help notification when user fails the copy command
+* Added new pane opened by package will use same line endings as first pane #39
 * Changed next/prev diff command to move cursor with it so copy commands are easy #51
 * Fixed error when trying to copy last chunk when it didn't have a match #50
 * Fixed ignore whitespace not affecting the diff outcome #52

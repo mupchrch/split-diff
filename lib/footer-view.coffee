@@ -1,5 +1,5 @@
 module.exports =
-class SplitDiffUI
+class FooterView
   constructor: (isWhitespaceIgnored) ->
     # create root UI element
     @element = document.createElement('div')

@@ -1,7 +1,7 @@
 {CompositeDisposable, Directory, File} = require 'atom'
 DiffViewEditor = require './build-lines'
 LoadingView = require './loading-view'
-SplitDiffUI = require './split-diff-ui'
+FooterView = require './footer-view'
 SyncScroll = require './sync-scroll'
 configSchema = require "./config-schema"
 path = require 'path'
@@ -11,6 +11,7 @@ module.exports = SplitDiff =
   subscriptions: null
   diffViewEditor1: null
   diffViewEditor2: null
+  buffer1LineEnding: 'LF'
   editorSubscriptions: null
   linkedDiffChunks: null
   diffChunkPointer: 0
@@ -81,9 +82,9 @@ module.exports = SplitDiff =
         @diffViewEditor2.cleanUp()
 
     # remove bottom panel
-    if @splitDiffView?
-      @splitDiffView.destroy()
-      @splitDiffView = null
+    if @footerView?
+      @footerView.destroy()
+      @footerView = null
 
     @_clearDiff()
 
@@ -192,10 +193,10 @@ module.exports = SplitDiff =
     isWordDiffEnabled = @_getConfig('diffWords')
 
     # add the bottom UI panel
-    if !@splitDiffView?
-      @splitDiffView = new SplitDiffUI(isWhitespaceIgnored)
-      @splitDiffView.createPanel()
-    @splitDiffView.show()
+    if !@footerView?
+      @footerView = new FooterView(isWhitespaceIgnored)
+      @footerView.createPanel()
+    @footerView.show()
 
     # update diff if there is no git repo (no onchange fired)
     if !@hasGitRepo
@@ -239,9 +240,21 @@ module.exports = SplitDiff =
   updateDiff: (editors) ->
     @isEnabled = true
 
+    # prevent this method to be run one time
+    # otherwise onDidStopChanging listener will fire this infinitely after we convert line endings
+    if @preventUpdateDiff? && @preventUpdateDiff
+      @preventUpdateDiff = false
+      return
+
     if @process?
       @process.kill()
       @process = null
+
+    # set second editor created by this package line ending to that of first editor #39
+    if @wasEditor2Created && editors.editor2.getText() != ''
+      if @buffer1LineEnding == 'LF' || @buffer1LineEnding == 'CRLF'
+        @preventUpdateDiff = true
+        atom.commands.dispatch(atom.views.getView(editors.editor2), 'line-ending-selector:convert-to-' + @buffer1LineEnding)
 
     isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
 
@@ -278,7 +291,7 @@ module.exports = SplitDiff =
   # resumes after the compute diff process returns
   _resumeUpdateDiff: (editors, computedDiff) ->
     @linkedDiffChunks = @_evaluateDiffOrder(computedDiff.chunks)
-    @splitDiffView?.setNumDifferences(@linkedDiffChunks.length)
+    @footerView?.setNumDifferences(@linkedDiffChunks.length)
 
     @_clearDiff()
     @_displayDiff(editors, computedDiff)
@@ -334,9 +347,17 @@ module.exports = SplitDiff =
       @wasEditor2SoftWrapped = true
       editor2.setSoftWrapped(false)
 
-    # want to scroll a newly created editor to the first editor's position
+    BufferExtender = require './buffer-extender'
+    @buffer1LineEnding = (new BufferExtender(editor1.getBuffer())).getLineEnding()
+    buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()
+
     if @wasEditor2Created
+      # want to scroll a newly created editor to the first editor's position
       atom.views.getView(editor1).focus()
+    else if buffer2LineEnding != '' && (@buffer1LineEnding != buffer2LineEnding)
+      # only pop warning if the line endings differ and the second editor wasn't one that the package created
+      lineEndingMsg = 'Warning: Editor line endings differ!'
+      atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
 
     editors =
       editor1: editor1
@@ -391,7 +412,7 @@ module.exports = SplitDiff =
       @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
       @diffViewEditor2.getEditor().setCursorBufferPosition([diffChunk.newLineStart, 0], {autoscroll: true})
       # update selection counter
-      @splitDiffView.showSelectionCount(selectionCount+1)
+      @footerView.showSelectionCount(selectionCount+1)
 
   # removes diff and sync scroll
   _clearDiff: ->
