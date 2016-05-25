@@ -48,15 +48,15 @@ class FooterView
     @numDifferencesValue.classList.add('num-diff-value')
     @numDifferencesValue.textContent = '...'
     # create number of differences text
-    numDifferencesText = document.createElement('span')
-    numDifferencesText.textContent = 'differences'
-    numDifferencesText.classList.add('num-diff-text')
+    @numDifferencesText = document.createElement('span')
+    @numDifferencesText.textContent = 'differences'
+    @numDifferencesText.classList.add('num-diff-text')
     # create number of differences container
     numDifferences = document.createElement('div')
     numDifferences.classList.add('num-diff')
     # add items to container
     numDifferences.appendChild(@numDifferencesValue)
-    numDifferences.appendChild(numDifferencesText)
+    numDifferences.appendChild(@numDifferencesText)
     # create left column and add prev/next buttons and number of differences text
     left = document.createElement('div')
     left.classList.add('left')
@@ -79,6 +79,7 @@ class FooterView
     copyToLeftButton.onclick = () ->
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:copy-to-left')
     copyToLeftButton.title = 'Copy to Left'
+    #copyToLeftButton.textContent = 'Copy to Left'
     # create copy to right button
     copyToRightButton = document.createElement('button')
     copyToRightButton.classList.add('btn')
@@ -87,6 +88,7 @@ class FooterView
     copyToRightButton.onclick = () ->
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:copy-to-right')
     copyToRightButton.title = 'Copy to Right'
+    #copyToRightButton.textContent = 'Copy to Right'
     # create mid column
     mid = document.createElement('div')
     #mid.classList.add('btn-group')
@@ -143,6 +145,10 @@ class FooterView
 
   # set the number of differences value
   setNumDifferences: (num) ->
+    if num == 1
+      @numDifferencesText.textContent = 'difference'
+    else
+      @numDifferencesText.textContent = 'differences'
     @numDifferencesValue.textContent = num
 
   # show the selection counter next to the number of differences

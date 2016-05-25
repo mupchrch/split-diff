@@ -48,20 +48,20 @@ module.exports = SplitDiff =
       'split-diff:toggle': => @toggle()
 
   deactivate: ->
-    @disable(false)
+    @disable()
     @subscriptions.dispose()
 
   # called by "toggle" command
   # toggles split diff
   toggle: ->
     if @isEnabled
-      @disable(true)
+      @disable()
     else
       @diffPanes()
 
   # called by "Disable" command
   # removes diff and sync scroll, disposes of subscriptions
-  disable: (displayMsg) ->
+  disable: () ->
     @isEnabled = false
 
     # remove listeners
@@ -96,9 +96,6 @@ module.exports = SplitDiff =
     @wasEditor2SoftWrapped = false
     @wasEditor2Created = false
     @hasGitRepo = false
-
-    if displayMsg
-      atom.notifications.addInfo('Split Diff Disabled', {dismissable: false, icon: 'diff'})
 
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff
@@ -172,7 +169,7 @@ module.exports = SplitDiff =
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
   diffPanes: ->
     # in case enable was called again
-    @disable(false)
+    @disable()
 
     editors = @_getVisibleEditors()
 
@@ -183,14 +180,13 @@ module.exports = SplitDiff =
     @editorSubscriptions.add editors.editor2.onDidStopChanging =>
       @updateDiff(editors)
     @editorSubscriptions.add editors.editor1.onDidDestroy =>
-      @disable(true)
+      @disable()
     @editorSubscriptions.add editors.editor2.onDidDestroy =>
-      @disable(true)
+      @disable()
     @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
       @updateDiff(editors)
 
     isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
-    isWordDiffEnabled = @_getConfig('diffWords')
 
     # add the bottom UI panel
     if !@footerView?
@@ -230,11 +226,6 @@ module.exports = SplitDiff =
         ]
       }]
     }
-
-    detailMsg = 'Ignore Whitespace: ' + isWhitespaceIgnored
-    detailMsg += '\nShow Word Diff: ' + isWordDiffEnabled
-    detailMsg += '\nSync Horizontal Scroll: ' + @_getConfig('syncHorizontalScroll')
-    atom.notifications.addInfo('Split Diff Enabled', {detail: detailMsg, dismissable: false, icon: 'diff'})
 
   # called by both diffPanes and the editor subscription to update the diff
   updateDiff: (editors) ->

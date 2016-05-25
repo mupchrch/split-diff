@@ -91,9 +91,15 @@ atom-text-editor, atom-text-editor::shadow {
   .copy-to-left {
     .octicon(clippy);
   }
+  .copy-to-left:before {
+    //margin-right: 6px;
+  }
   .copy-to-right {
     .octicon(clippy);
+  }
+  .copy-to-right:before { // mirror just the icon (not the whole button)
     transform: scaleX(-1);
+    //margin-right: 6px;
   }
   .prev-diff {
     .octicon(chevron-up);
