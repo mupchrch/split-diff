@@ -11,7 +11,6 @@ module.exports = SplitDiff =
   subscriptions: null
   diffViewEditor1: null
   diffViewEditor2: null
-  buffer1LineEnding: 'LF'
   editorSubscriptions: null
   linkedDiffChunks: null
   diffChunkPointer: 0
@@ -171,10 +170,11 @@ module.exports = SplitDiff =
     # in case enable was called again
     @disable()
 
+    @editorSubscriptions = new CompositeDisposable()
+
     editors = @_getVisibleEditors()
 
     # add listeners
-    @editorSubscriptions = new CompositeDisposable()
     @editorSubscriptions.add editors.editor1.onDidStopChanging =>
       @updateDiff(editors)
     @editorSubscriptions.add editors.editor2.onDidStopChanging =>
@@ -231,21 +231,9 @@ module.exports = SplitDiff =
   updateDiff: (editors) ->
     @isEnabled = true
 
-    # prevent this method to be run one time
-    # otherwise onDidStopChanging listener will fire this infinitely after we convert line endings
-    if @preventUpdateDiff? && @preventUpdateDiff
-      @preventUpdateDiff = false
-      return
-
     if @process?
       @process.kill()
       @process = null
-
-    # set second editor created by this package line ending to that of first editor #39
-    if @wasEditor2Created && editors.editor2.getText() != ''
-      if @buffer1LineEnding == 'LF' || @buffer1LineEnding == 'CRLF'
-        @preventUpdateDiff = true
-        atom.commands.dispatch(atom.views.getView(editors.editor2), 'line-ending-selector:convert-to-' + @buffer1LineEnding)
 
     isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
 
@@ -339,14 +327,18 @@ module.exports = SplitDiff =
       editor2.setSoftWrapped(false)
 
     BufferExtender = require './buffer-extender'
-    @buffer1LineEnding = (new BufferExtender(editor1.getBuffer())).getLineEnding()
+    buffer1LineEnding = (new BufferExtender(editor1.getBuffer())).getLineEnding()
     buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()
 
     if @wasEditor2Created
       # want to scroll a newly created editor to the first editor's position
       atom.views.getView(editor1).focus()
-    else if buffer2LineEnding != '' && (@buffer1LineEnding != buffer2LineEnding)
-      # only pop warning if the line endings differ and the second editor wasn't one that the package created
+      # set the preferred line ending before inserting text if there is no git repo #39
+      if !@hasGitRepo && (buffer1LineEnding == '\n' || buffer1LineEnding == '\r\n')
+        @editorSubscriptions.add editor2.onWillInsertText () ->
+          editor2.getBuffer().setPreferredLineEnding(buffer1LineEnding)
+    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding)
+      # pop warning if the line endings differ and we haven't done anything about it
       lineEndingMsg = 'Warning: Editor line endings differ!'
       atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
 
