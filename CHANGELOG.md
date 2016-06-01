@@ -1,3 +1,6 @@
+## 1.0.1 - 2016-XX-XX
+* Fixed Uncaught TypeError when trying to highlight word diff #60
+
 ## 1.0.0 - 2016-05-26
 * Added a user interface!
 * Added help notification when user fails the copy command

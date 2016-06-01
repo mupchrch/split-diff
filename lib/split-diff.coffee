@@ -524,7 +524,7 @@ module.exports = SplitDiff =
           excessLines = (c.newLineEnd - c.newLineStart) - lineRange
         # figure out diff between lines and highlight
         for i in [0 ... lineRange] by 1
-          wordDiff = ComputeWordDiff.computeWordDiff(@diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i), @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i), isWhitespaceIgnored)
+          wordDiff = ComputeWordDiff.computeWordDiff(@diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i), @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i))
           if leftColor == 'green'
             @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'added', isWhitespaceIgnored)
           else
