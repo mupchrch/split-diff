@@ -334,10 +334,10 @@ module.exports = SplitDiff =
       # want to scroll a newly created editor to the first editor's position
       atom.views.getView(editor1).focus()
       # set the preferred line ending before inserting text if there is no git repo #39
-      if !@hasGitRepo && (buffer1LineEnding == '\n' || buffer1LineEnding == '\r\n')
+      if buffer1LineEnding == '\n' || buffer1LineEnding == '\r\n'
         @editorSubscriptions.add editor2.onWillInsertText () ->
           editor2.getBuffer().setPreferredLineEnding(buffer1LineEnding)
-    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding)
+    else if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding)
       # pop warning if the line endings differ and we haven't done anything about it
       lineEndingMsg = 'Warning: Editor line endings differ!'
       atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
