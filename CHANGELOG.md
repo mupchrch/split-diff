@@ -1,6 +1,7 @@
-## 1.0.1 - 2016-XX-XX
+## 1.0.1 - 2016-06-01
 * Fixed Uncaught TypeError when trying to highlight word diff #60
 * Fixed new pane not using same line endings as first pane for git repo #39
+* Fixed last chunk not being the same size which caused misalignment of editors #58
 
 ## 1.0.0 - 2016-05-26
 * Added a user interface!
