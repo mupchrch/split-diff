@@ -273,15 +273,16 @@ module.exports = SplitDiff =
     @footerView?.setNumDifferences(@linkedDiffChunks.length)
 
     # make the last chunk equal size on both screens so the editors retain sync scroll #58
-    lastDiffChunk = @linkedDiffChunks[@linkedDiffChunks.length-1]
-    oldChunkRange = lastDiffChunk.oldLineEnd - lastDiffChunk.oldLineStart
-    newChunkRange = lastDiffChunk.newLineEnd - lastDiffChunk.newLineStart
-    if oldChunkRange > newChunkRange
-      # make the offset as large as needed to make the chunk the same size in both editors
-      computedDiff.newLineOffsets[lastDiffChunk.newLineStart + newChunkRange] = oldChunkRange - newChunkRange
-    else if newChunkRange > oldChunkRange
-      # make the offset as large as needed to make the chunk the same size in both editors
-      computedDiff.oldLineOffsets[lastDiffChunk.oldLineStart + oldChunkRange] = newChunkRange - oldChunkRange
+    if @linkedDiffChunks.length > 0
+      lastDiffChunk = @linkedDiffChunks[@linkedDiffChunks.length-1]
+      oldChunkRange = lastDiffChunk.oldLineEnd - lastDiffChunk.oldLineStart
+      newChunkRange = lastDiffChunk.newLineEnd - lastDiffChunk.newLineStart
+      if oldChunkRange > newChunkRange
+        # make the offset as large as needed to make the chunk the same size in both editors
+        computedDiff.newLineOffsets[lastDiffChunk.newLineStart + newChunkRange] = oldChunkRange - newChunkRange
+      else if newChunkRange > oldChunkRange
+        # make the offset as large as needed to make the chunk the same size in both editors
+        computedDiff.oldLineOffsets[lastDiffChunk.oldLineStart + oldChunkRange] = newChunkRange - oldChunkRange
 
     @_clearDiff()
     @_displayDiff(editors, computedDiff)
