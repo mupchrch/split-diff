@@ -324,6 +324,17 @@ module.exports = SplitDiff =
       rightPane = atom.workspace.getActivePane().splitRight()
       rightPane.addItem(editor2)
 
+    BufferExtender = require './buffer-extender'
+    buffer1LineEnding = (new BufferExtender(editor1.getBuffer())).getLineEnding()
+
+    if @wasEditor2Created
+      # want to scroll a newly created editor to the first editor's position
+      atom.views.getView(editor1).focus()
+      # set the preferred line ending before inserting text #39
+      if buffer1LineEnding == '\n' || buffer1LineEnding == '\r\n'
+        @editorSubscriptions.add editor2.onWillInsertText () ->
+          editor2.getBuffer().setPreferredLineEnding(buffer1LineEnding)
+
     @_setupGitRepo(editor1, editor2)
 
     # unfold all lines so diffs properly align
@@ -338,18 +349,8 @@ module.exports = SplitDiff =
       @wasEditor2SoftWrapped = true
       editor2.setSoftWrapped(false)
 
-    BufferExtender = require './buffer-extender'
-    buffer1LineEnding = (new BufferExtender(editor1.getBuffer())).getLineEnding()
     buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()
-
-    if @wasEditor2Created
-      # want to scroll a newly created editor to the first editor's position
-      atom.views.getView(editor1).focus()
-      # set the preferred line ending before inserting text if there is no git repo #39
-      if buffer1LineEnding == '\n' || buffer1LineEnding == '\r\n'
-        @editorSubscriptions.add editor2.onWillInsertText () ->
-          editor2.getBuffer().setPreferredLineEnding(buffer1LineEnding)
-    else if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding)
+    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding)
       # pop warning if the line endings differ and we haven't done anything about it
       lineEndingMsg = 'Warning: Editor line endings differ!'
       atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
@@ -371,7 +372,8 @@ module.exports = SplitDiff =
             relativeEditor1Path = projectRepo.relativize(editor1Path)
             gitHeadText = projectRepo.repo.getHeadBlob(relativeEditor1Path)
             if gitHeadText?
-              editor2.setText(gitHeadText)
+              editor2.selectAll()
+              editor2.insertText(gitHeadText)
               @hasGitRepo = true
               break
 

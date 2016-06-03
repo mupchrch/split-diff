@@ -1,3 +1,6 @@
+## 1.0.2 - 2016-06-02
+* Actually fixed new pane not using same line endings as first pane for git repo #39 - thanks IceOnFire!
+
 ## 1.0.1 - 2016-06-01
 * Fixed Uncaught TypeError when trying to highlight word diff #60
 * Fixed new pane not using same line endings as first pane for git repo #39
