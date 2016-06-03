@@ -347,8 +347,9 @@ module.exports = SplitDiff =
       atom.views.getView(editor1).focus()
       # set the preferred line ending before inserting text if there is no git repo #39
       if buffer1LineEnding == '\n' || buffer1LineEnding == '\r\n'
-        @editorSubscriptions.add editor2.onWillInsertText () ->
-          editor2.getBuffer().setPreferredLineEnding(buffer1LineEnding)
+        buffer2 = editor2.getBuffer()
+        buffer2.setPreferredLineEnding(buffer1LineEnding)
+        buffer2.setText(buffer2.getText().replace(BufferExtender.LINE_ENDING_REGEXP, buffer1LineEnding))
     else if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding)
       # pop warning if the line endings differ and we haven't done anything about it
       lineEndingMsg = 'Warning: Editor line endings differ!'
