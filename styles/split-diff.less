@@ -43,10 +43,14 @@ atom-text-editor, atom-text-editor::shadow {
   }
 }
 
+// animation needs to be on the outer modal element and not its contents
+.split-diff-hide-mask {
+  animation: delay-modal 1s forwards;
+}
+
 .split-diff-modal {
   padding: 14px;
   text-align: center;
-  animation: delay-modal 1s forwards;
 }
 
 .split-diff-message {
