@@ -1,3 +1,6 @@
+## 1.0.3 - 2016-06-20
+* Reintroduced one second delay to the loading modal #62
+
 ## 1.0.2 - 2016-06-03
 * Actually fixed line ending normalization for git repo #39 - thanks IceOnFire!
 
@@ -18,7 +21,7 @@
 * Fixed pane not getting destroyed if auto-opened editor was last item in it #48
 
 ## 0.8.3 - 2016-05-16
-* Fixed loading modal appearing forever after diff computes quickly #47
+* Fixed loading modal appearing forever after diff computes quickly (remove one second delay) #47
 
 ## 0.8.2 - 2016-05-16
 * Fixed left editor remains soft wrapped #46

@@ -30,9 +30,23 @@ atom-text-editor, atom-text-editor::shadow {
   }
 }
 
+/* loading modal */
+@keyframes delay-modal {
+  0% {
+    opacity: 0;
+  }
+  99% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .split-diff-modal {
   padding: 14px;
   text-align: center;
+  animation: delay-modal 1s forwards;
 }
 
 .split-diff-message {
@@ -40,7 +54,6 @@ atom-text-editor, atom-text-editor::shadow {
   display: inline-block;
 }
 
-/* loading icon */
 .split-diff-icon {
   background-image: url('images/octocat-spinner-128.gif');
   background-repeat: no-repeat;
@@ -54,7 +67,7 @@ atom-text-editor, atom-text-editor::shadow {
   display: none;
 }
 
-// bottom panel UI
+/* bottom panel UI */
 .split-diff-ui {
   padding: 2px 10px 2px 10px;
   display: flex;
