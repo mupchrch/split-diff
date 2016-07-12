@@ -10,3 +10,4 @@
 'atom-workspace':
   'ctrl-alt-n': 'split-diff:next-diff'
   'ctrl-alt-p': 'split-diff:prev-diff'
+  'ctrl-alt-t': 'split-diff:toggle'
