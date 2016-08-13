@@ -254,14 +254,15 @@ module.exports = SplitDiff =
     stdout = (output) =>
       theOutput = output
       computedDiff = JSON.parse(output)
+      @process.kill()
+      @loadingView?.hide()
+      @_resumeUpdateDiff(editors, computedDiff)
     stderr = (err) =>
       theOutput = err
     exit = (code) =>
       @loadingView?.hide()
 
-      if code == 0
-        @_resumeUpdateDiff(editors, computedDiff)
-      else
+      if code != 0
         console.log('BufferedNodeProcess code was ' + code)
         console.log(theOutput)
     @process = new BufferedNodeProcess({command, args, stdout, stderr, exit})

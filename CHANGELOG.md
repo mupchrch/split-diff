@@ -1,3 +1,6 @@
+## X.X.X - XXXX-XX-XX
+* Fixed diff hanging when diffing files containing json/xml #65
+
 ## 1.0.3 - 2016-06-20
 * Reintroduced one second delay to the loading modal #62
 
