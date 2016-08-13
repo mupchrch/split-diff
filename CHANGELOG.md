@@ -1,4 +1,6 @@
 ## X.X.X - XXXX-XX-XX
+* Added keybinding for toggle #64 - thanks moritamori!
+* Changed next/prev diff command to toggle package if not enabled #66
 * Fixed diff hanging when diffing files containing json/xml #65
 
 ## 1.0.3 - 2016-06-20

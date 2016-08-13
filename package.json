@@ -18,7 +18,9 @@
   "activationCommands": {
     "atom-workspace": [
       "split-diff:toggle",
-      "split-diff:enable"
+      "split-diff:enable",
+      "split-diff:next-diff",
+      "split-diff:prev-diff"
     ]
   },
   "repository": "https://github.com/mupchrch/split-diff",

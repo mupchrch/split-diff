@@ -33,9 +33,13 @@ module.exports = SplitDiff =
       'split-diff:next-diff': =>
         if @isEnabled
           @nextDiff()
+        else
+          @diffPanes()
       'split-diff:prev-diff': =>
         if @isEnabled
           @prevDiff()
+        else
+          @diffPanes()
       'split-diff:copy-to-right': =>
         if @isEnabled
           @copyChunkToRight()
