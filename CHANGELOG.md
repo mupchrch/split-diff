@@ -2,6 +2,8 @@
 * Added keybinding for toggle #64 - thanks moritamori!
 * Changed next/prev diff command to toggle package if not enabled #66
 * Fixed diff hanging when diffing files containing json/xml #65
+* Fixed uncaught exception when pressing copy chunk button before diff finished
+* Fixed uncaught exception when pressing next/prev button before diff finished
 
 ## 1.0.3 - 2016-06-20
 * Reintroduced one second delay to the loading modal #62

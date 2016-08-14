@@ -108,65 +108,69 @@ module.exports = SplitDiff =
 
   # called by "Move to next diff" command
   nextDiff: ->
-    if !@isFirstChunkSelect
-      @diffChunkPointer++
-      if @diffChunkPointer >= @linkedDiffChunks.length
-        @diffChunkPointer = 0
-    else
-      @isFirstChunkSelect = false
+    if @diffViewEditor1 && @diffViewEditor2
+      if !@isFirstChunkSelect
+        @diffChunkPointer++
+        if @diffChunkPointer >= @linkedDiffChunks.length
+          @diffChunkPointer = 0
+      else
+        @isFirstChunkSelect = false
 
-    @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
+      @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
 
   # called by "Move to previous diff" command
   prevDiff: ->
-    if !@isFirstChunkSelect
-      @diffChunkPointer--
-      if @diffChunkPointer < 0
-        @diffChunkPointer = @linkedDiffChunks.length - 1
-    else
-      @isFirstChunkSelect = false
+    if @diffViewEditor1 && @diffViewEditor2
+      if !@isFirstChunkSelect
+        @diffChunkPointer--
+        if @diffChunkPointer < 0
+          @diffChunkPointer = @linkedDiffChunks.length - 1
+      else
+        @isFirstChunkSelect = false
 
-    @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
+      @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
 
   copyChunkToRight: ->
-    linesToMove = @diffViewEditor1.getCursorDiffLines()
+    if @diffViewEditor1 && @diffViewEditor2
+      linesToMove = @diffViewEditor1.getCursorDiffLines()
 
-    if linesToMove.length == 0
-      atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
+      if linesToMove.length == 0
+        atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
 
-    offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
-    for lineRange in linesToMove
-      for diffChunk in @linkedDiffChunks
-        if lineRange.start.row == diffChunk.oldLineStart
-          moveText = @diffViewEditor1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
-          lastBufferRow = @diffViewEditor2.getEditor().getLastBufferRow()
-          # insert new line if the chunk we want to copy will be below the last line of the other editor
-          if (diffChunk.newLineStart + offset) > lastBufferRow
-            @diffViewEditor2.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
-            @diffViewEditor2.getEditor().insertNewline()
-          @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
-          # offset will be the amount of lines to be copied minus the amount of lines overwritten
-          offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
+      offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
+      for lineRange in linesToMove
+        for diffChunk in @linkedDiffChunks
+          if lineRange.start.row == diffChunk.oldLineStart
+            moveText = @diffViewEditor1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
+            lastBufferRow = @diffViewEditor2.getEditor().getLastBufferRow()
+            # insert new line if the chunk we want to copy will be below the last line of the other editor
+            if (diffChunk.newLineStart + offset) > lastBufferRow
+              @diffViewEditor2.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
+              @diffViewEditor2.getEditor().insertNewline()
+            @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
+            # offset will be the amount of lines to be copied minus the amount of lines overwritten
+            offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
 
   copyChunkToLeft: ->
-    linesToMove = @diffViewEditor2.getCursorDiffLines()
+    if @diffViewEditor1 && @diffViewEditor2
+      linesToMove = @diffViewEditor2.getCursorDiffLines()
 
-    if linesToMove.length == 0
-      atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
+      if linesToMove.length == 0
+        atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
 
-    offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
-    for lineRange in linesToMove
-      for diffChunk in @linkedDiffChunks
-        if lineRange.start.row == diffChunk.newLineStart
-          moveText = @diffViewEditor2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
-          lastBufferRow = @diffViewEditor1.getEditor().getLastBufferRow()
-          # insert new line if the chunk we want to copy will be below the last line of the other editor
-          if (diffChunk.oldLineStart + offset) > lastBufferRow
-            @diffViewEditor1.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
-            @diffViewEditor1.getEditor().insertNewline()
-          @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
-          # offset will be the amount of lines to be copied minus the amount of lines overwritten
-          offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
+      offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
+      for lineRange in linesToMove
+        for diffChunk in @linkedDiffChunks
+          if lineRange.start.row == diffChunk.newLineStart
+            moveText = @diffViewEditor2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
+            lastBufferRow = @diffViewEditor1.getEditor().getLastBufferRow()
+            # insert new line if the chunk we want to copy will be below the last line of the other editor
+            if (diffChunk.oldLineStart + offset) > lastBufferRow
+              @diffViewEditor1.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
+              @diffViewEditor1.getEditor().insertNewline()
+            @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
+            # offset will be the amount of lines to be copied minus the amount of lines overwritten
+            offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
 
   # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
@@ -259,6 +263,7 @@ module.exports = SplitDiff =
       theOutput = output
       computedDiff = JSON.parse(output)
       @process.kill()
+      @process = null
       @loadingView?.hide()
       @_resumeUpdateDiff(editors, computedDiff)
     stderr = (err) =>
