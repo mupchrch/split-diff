@@ -1,3 +1,6 @@
+## X.X.X - XXXX-XX-XX
+* Updated option for scroll syncing to be able to turn off all syncing #68
+
 ## 1.0.4 - 2016-08-13
 * Added keybinding for toggle #64 - thanks moritamori!
 * Changed next/prev diff command to toggle package if not enabled #66

@@ -301,9 +301,13 @@ module.exports = SplitDiff =
     if isWordDiffEnabled
       @_highlightWordDiff(@linkedDiffChunks)
 
-    syncHorizontalScroll = @_getConfig('syncHorizontalScroll')
-    @syncScroll = new SyncScroll(editors.editor1, editors.editor2, syncHorizontalScroll)
-    @syncScroll.syncPositions()
+    scrollSyncType = @_getConfig('scrollSyncType')
+    if scrollSyncType == 'Vertical + Horizontal'
+      @syncScroll = new SyncScroll(editors.editor1, editors.editor2, true)
+      @syncScroll.syncPositions()
+    else if scrollSyncType == 'Vertical'
+      @syncScroll = new SyncScroll(editors.editor1, editors.editor2, false)
+      @syncScroll.syncPositions()
 
   # gets two visible editors
   # auto opens new editors so there are two to diff with
