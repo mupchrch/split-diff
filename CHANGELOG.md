@@ -1,5 +1,7 @@
-## X.X.X - XXXX-XX-XX
+## 1.0.5 - 2016-10-05
+* Added option to mute warning notifications
 * Updated option for scroll syncing to be able to turn off all syncing #68
+* Changed package to no longer disable soft wrap while diffing #71
 
 ## 1.0.4 - 2016-08-13
 * Added keybinding for toggle #64 - thanks moritamori!

@@ -355,18 +355,17 @@ module.exports = SplitDiff =
     editor1.unfoldAll()
     editor2.unfoldAll()
 
-    # turn off soft wrap setting for these editors so diffs properly align
-    if editor1.isSoftWrapped()
-      @wasEditor1SoftWrapped = true
-      editor1.setSoftWrapped(false)
-    if editor2.isSoftWrapped()
-      @wasEditor2SoftWrapped = true
-      editor2.setSoftWrapped(false)
+    shouldNotify = !@_getConfig('muteNotifications')
+    softWrapMsg = 'Warning: Soft wrap enabled! (Line diffs may not align)'
+    if editor1.isSoftWrapped() && shouldNotify
+      atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
+    else if editor2.isSoftWrapped() && shouldNotify
+      atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
 
     buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()
-    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding)
+    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding) && shouldNotify
       # pop warning if the line endings differ and we haven't done anything about it
-      lineEndingMsg = 'Warning: Editor line endings differ!'
+      lineEndingMsg = 'Warning: Line endings differ!'
       atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
 
     editors =
