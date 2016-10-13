@@ -1,3 +1,6 @@
+## 1.0.6 - 2016-10-13
+* Fixed next/prev diff highlight skipping a selection after copying to right/left
+
 ## 1.0.5 - 2016-10-05
 * Added option to mute warning notifications
 * Updated option for scroll syncing to be able to turn off all syncing #68

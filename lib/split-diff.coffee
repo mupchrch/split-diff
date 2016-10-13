@@ -150,6 +150,9 @@ module.exports = SplitDiff =
             @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
             # offset will be the amount of lines to be copied minus the amount of lines overwritten
             offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
+            # move the selection pointer back so the next diff chunk is not skipped
+            if @diffViewEditor1.hasSelection() || @diffViewEditor2.hasSelection()
+              @diffChunkPointer--
 
   copyChunkToLeft: ->
     if @diffViewEditor1 && @diffViewEditor2
@@ -171,6 +174,9 @@ module.exports = SplitDiff =
             @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
             # offset will be the amount of lines to be copied minus the amount of lines overwritten
             offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
+            # move the selection pointer back so the next diff chunk is not skipped
+            if @diffViewEditor1.hasSelection() || @diffViewEditor2.hasSelection()
+              @diffChunkPointer--
 
   # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
