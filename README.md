@@ -20,8 +20,8 @@ You can call any of these commands from your own custom keybinding, simply overr
 | Ignore Whitespace `split-diff:ignore-whitespace` | Toggles the Ignore Whitespace setting. | ... |
 | Move to Next Diff `split-diff:next-diff` | Highlights the next difference. Moves the cursor so it can be easily copied. | `ctrl-alt-n` |
 | Move to Previous Diff `split-diff:prev-diff` | Highlights the previous difference. Moves the cursor so it can be easily copied. | `ctrl-alt-p` |
-| Copy to Right `split-diff:copy-to-right` | Copies all differences containing a cursor to the right pane. | ... |
-| Copy to Left `split-diff:copy-to-left` | Copies all differences containing a cursor to the left pane. | ... |
+| Copy to Right `split-diff:copy-to-right` | Copies all differences containing a cursor to the right pane. | `ctrl-alt-.` |
+| Copy to Left `split-diff:copy-to-left` | Copies all differences containing a cursor to the left pane. | `ctrl-alt-,` |
 
 ### Settings
 
