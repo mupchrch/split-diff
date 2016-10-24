@@ -11,3 +11,9 @@
   'ctrl-alt-n': 'split-diff:next-diff'
   'ctrl-alt-p': 'split-diff:prev-diff'
   'ctrl-alt-t': 'split-diff:toggle'
+'.split-diff':
+  'ctrl-alt-,': 'split-diff:copy-to-left'
+  'ctrl-alt-.': 'split-diff:copy-to-right'
+'.split-diff-ui':
+  'ctrl-alt-,': 'split-diff:copy-to-left'
+  'ctrl-alt-.': 'split-diff:copy-to-right'

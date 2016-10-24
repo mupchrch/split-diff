@@ -15,8 +15,6 @@ module.exports = SplitDiff =
   linkedDiffChunks: null
   diffChunkPointer: 0
   isFirstChunkSelect: true
-  wasEditor1SoftWrapped: false
-  wasEditor2SoftWrapped: false
   isEnabled: false
   wasEditor1Created: false
   wasEditor2Created: false
@@ -73,14 +71,10 @@ module.exports = SplitDiff =
       @editorSubscriptions = null
 
     if @diffViewEditor1?
-      if @wasEditor1SoftWrapped
-        @diffViewEditor1.enableSoftWrap()
       if @wasEditor1Created
         @diffViewEditor1.cleanUp()
 
     if @diffViewEditor2?
-      if @wasEditor2SoftWrapped
-        @diffViewEditor2.enableSoftWrap()
       if @wasEditor2Created
         @diffViewEditor2.cleanUp()
 
@@ -94,9 +88,7 @@ module.exports = SplitDiff =
     # reset all variables
     @diffChunkPointer = 0
     @isFirstChunkSelect = true
-    @wasEditor1SoftWrapped = false
     @wasEditor1Created = false
-    @wasEditor2SoftWrapped = false
     @wasEditor2Created = false
     @hasGitRepo = false
 
@@ -435,11 +427,11 @@ module.exports = SplitDiff =
     @loadingView?.hide()
 
     if @diffViewEditor1?
-      @diffViewEditor1.destroyMarkers()
+      @diffViewEditor1.destroy()
       @diffViewEditor1 = null
 
     if @diffViewEditor2?
-      @diffViewEditor2.destroyMarkers()
+      @diffViewEditor2.destroy()
       @diffViewEditor2 = null
 
     if @syncScroll?
