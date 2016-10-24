@@ -1,8 +1,6 @@
-## 1.0.7 - 2016-10-24
-* Added keybinding for copy to left/right and scoped it to just the editors #73
-
-## 1.0.6 - 2016-10-13
+## 1.0.6 - 2016-10-24
 * Fixed next/prev diff highlight skipping a selection after copying to right/left
+* Added keybinding for copy to left/right and scoped it to just the editors #73
 
 ## 1.0.5 - 2016-10-05
 * Added option to mute warning notifications
