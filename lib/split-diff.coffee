@@ -102,28 +102,18 @@ module.exports = SplitDiff =
 
   # called by "Move to next diff" command
   nextDiff: ->
-    # TODO make sure to check if diffView exists
-    if @editorDiffExtender1 && @editorDiffExtender2
-      if !@isFirstChunkSelect
-        @diffChunkPointer++
-        if @diffChunkPointer >= @linkedDiffChunks.length
-          @diffChunkPointer = 0
-      else
-        @isFirstChunkSelect = false
-
-      @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
+    if @diffView?
+      selectedIndex = @diffView.nextDiff()
+      if @footerView?
+        @footerView.showSelectionCount( selectedIndex + 1 )
 
   # called by "Move to previous diff" command
   prevDiff: ->
-    if @editorDiffExtender1 && @editorDiffExtender2
-      if !@isFirstChunkSelect
-        @diffChunkPointer--
-        if @diffChunkPointer < 0
-          @diffChunkPointer = @linkedDiffChunks.length - 1
-      else
-        @isFirstChunkSelect = false
-
-      @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
+    # TODO make sure to check if diffView exists?
+    if @diffView?
+      selectedIndex = @diffView.prevDiff()
+      if @footerView?
+        @footerView.showSelectionCount( selectedIndex + 1 )
 
   copyChunkToRight: ->
     if @editorDiffExtender1 && @editorDiffExtender2
@@ -411,20 +401,6 @@ module.exports = SplitDiff =
 
     return editorPaths
 
-  _selectDiffs: (diffChunk, selectionCount) ->
-    if diffChunk?
-      # deselect previous next/prev highlights
-      @editorDiffExtender1.deselectAllLines()
-      @editorDiffExtender2.deselectAllLines()
-      # highlight and scroll editor 1
-      @editorDiffExtender1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
-      @editorDiffExtender1.getEditor().setCursorBufferPosition([diffChunk.oldLineStart, 0], {autoscroll: true})
-      # highlight and scroll editor 2
-      @editorDiffExtender2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
-      @editorDiffExtender2.getEditor().setCursorBufferPosition([diffChunk.newLineStart, 0], {autoscroll: true})
-      # update selection counter
-      @footerView.showSelectionCount(selectionCount+1)
-
   # removes diff and sync scroll
   _clearDiff: ->
     @loadingView?.hide()
@@ -443,9 +419,7 @@ module.exports = SplitDiff =
 
   # displays the diff visually in the editors
   _displayDiff: (editors, computedDiff) ->
-    #@editorDiffExtender1 = new EditorDiffExtender(editors.editor1)
-    #@editorDiffExtender2 = new EditorDiffExtender(editors.editor2)
-    @diffView = new DiffView(editors)
+    @diffView = new DiffView(editors, computedDiff)
     [@editorDiffExtender1, @editorDiffExtender2] = @diffView.getEditorDiffExtenders()
 
     leftColor = @_getConfig('leftEditorColor')
