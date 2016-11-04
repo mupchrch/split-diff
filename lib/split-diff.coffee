@@ -1,5 +1,6 @@
 {CompositeDisposable, Directory, File} = require 'atom'
-DiffViewEditor = require './build-lines'
+DiffView = require './diff-view'
+EditorDiffExtender = require './editor-diff-extender'
 LoadingView = require './loading-view'
 FooterView = require './footer-view'
 SyncScroll = require './sync-scroll'
@@ -7,10 +8,11 @@ configSchema = require "./config-schema"
 path = require 'path'
 
 module.exports = SplitDiff =
+  diffView: null
   config: configSchema
   subscriptions: null
-  diffViewEditor1: null
-  diffViewEditor2: null
+  editorDiffExtender1: null
+  editorDiffExtender2: null
   editorSubscriptions: null
   linkedDiffChunks: null
   diffChunkPointer: 0
@@ -70,13 +72,13 @@ module.exports = SplitDiff =
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
 
-    if @diffViewEditor1?
+    if @editorDiffExtender1?
       if @wasEditor1Created
-        @diffViewEditor1.cleanUp()
+        @editorDiffExtender1.cleanUp()
 
-    if @diffViewEditor2?
+    if @editorDiffExtender2?
       if @wasEditor2Created
-        @diffViewEditor2.cleanUp()
+        @editorDiffExtender2.cleanUp()
 
     # remove bottom panel
     if @footerView?
@@ -100,7 +102,8 @@ module.exports = SplitDiff =
 
   # called by "Move to next diff" command
   nextDiff: ->
-    if @diffViewEditor1 && @diffViewEditor2
+    # TODO make sure to check if diffView exists
+    if @editorDiffExtender1 && @editorDiffExtender2
       if !@isFirstChunkSelect
         @diffChunkPointer++
         if @diffChunkPointer >= @linkedDiffChunks.length
@@ -112,7 +115,7 @@ module.exports = SplitDiff =
 
   # called by "Move to previous diff" command
   prevDiff: ->
-    if @diffViewEditor1 && @diffViewEditor2
+    if @editorDiffExtender1 && @editorDiffExtender2
       if !@isFirstChunkSelect
         @diffChunkPointer--
         if @diffChunkPointer < 0
@@ -123,8 +126,8 @@ module.exports = SplitDiff =
       @_selectDiffs(@linkedDiffChunks[@diffChunkPointer], @diffChunkPointer)
 
   copyChunkToRight: ->
-    if @diffViewEditor1 && @diffViewEditor2
-      linesToMove = @diffViewEditor1.getCursorDiffLines()
+    if @editorDiffExtender1 && @editorDiffExtender2
+      linesToMove = @editorDiffExtender1.getCursorDiffLines()
 
       if linesToMove.length == 0
         atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
@@ -133,22 +136,22 @@ module.exports = SplitDiff =
       for lineRange in linesToMove
         for diffChunk in @linkedDiffChunks
           if lineRange.start.row == diffChunk.oldLineStart
-            moveText = @diffViewEditor1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
-            lastBufferRow = @diffViewEditor2.getEditor().getLastBufferRow()
+            moveText = @editorDiffExtender1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
+            lastBufferRow = @editorDiffExtender2.getEditor().getLastBufferRow()
             # insert new line if the chunk we want to copy will be below the last line of the other editor
             if (diffChunk.newLineStart + offset) > lastBufferRow
-              @diffViewEditor2.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
-              @diffViewEditor2.getEditor().insertNewline()
-            @diffViewEditor2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
+              @editorDiffExtender2.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
+              @editorDiffExtender2.getEditor().insertNewline()
+            @editorDiffExtender2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
             # offset will be the amount of lines to be copied minus the amount of lines overwritten
             offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
             # move the selection pointer back so the next diff chunk is not skipped
-            if @diffViewEditor1.hasSelection() || @diffViewEditor2.hasSelection()
+            if @editorDiffExtender1.hasSelection() || @editorDiffExtender2.hasSelection()
               @diffChunkPointer--
 
   copyChunkToLeft: ->
-    if @diffViewEditor1 && @diffViewEditor2
-      linesToMove = @diffViewEditor2.getCursorDiffLines()
+    if @editorDiffExtender1 && @editorDiffExtender2
+      linesToMove = @editorDiffExtender2.getCursorDiffLines()
 
       if linesToMove.length == 0
         atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
@@ -157,17 +160,17 @@ module.exports = SplitDiff =
       for lineRange in linesToMove
         for diffChunk in @linkedDiffChunks
           if lineRange.start.row == diffChunk.newLineStart
-            moveText = @diffViewEditor2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
-            lastBufferRow = @diffViewEditor1.getEditor().getLastBufferRow()
+            moveText = @editorDiffExtender2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
+            lastBufferRow = @editorDiffExtender1.getEditor().getLastBufferRow()
             # insert new line if the chunk we want to copy will be below the last line of the other editor
             if (diffChunk.oldLineStart + offset) > lastBufferRow
-              @diffViewEditor1.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
-              @diffViewEditor1.getEditor().insertNewline()
-            @diffViewEditor1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
+              @editorDiffExtender1.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
+              @editorDiffExtender1.getEditor().insertNewline()
+            @editorDiffExtender1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
             # offset will be the amount of lines to be copied minus the amount of lines overwritten
             offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
             # move the selection pointer back so the next diff chunk is not skipped
-            if @diffViewEditor1.hasSelection() || @diffViewEditor2.hasSelection()
+            if @editorDiffExtender1.hasSelection() || @editorDiffExtender2.hasSelection()
               @diffChunkPointer--
 
   # called by the commands enable/toggle to do initial diff
@@ -277,7 +280,7 @@ module.exports = SplitDiff =
 
   # resumes after the compute diff process returns
   _resumeUpdateDiff: (editors, computedDiff) ->
-    @linkedDiffChunks = @_evaluateDiffOrder(computedDiff.chunks)
+    @linkedDiffChunks = computedDiff.chunks
     @footerView?.setNumDifferences(@linkedDiffChunks.length)
 
     # make the last chunk equal size on both screens so the editors retain sync scroll #58
@@ -411,14 +414,14 @@ module.exports = SplitDiff =
   _selectDiffs: (diffChunk, selectionCount) ->
     if diffChunk?
       # deselect previous next/prev highlights
-      @diffViewEditor1.deselectAllLines()
-      @diffViewEditor2.deselectAllLines()
+      @editorDiffExtender1.deselectAllLines()
+      @editorDiffExtender2.deselectAllLines()
       # highlight and scroll editor 1
-      @diffViewEditor1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
-      @diffViewEditor1.getEditor().setCursorBufferPosition([diffChunk.oldLineStart, 0], {autoscroll: true})
+      @editorDiffExtender1.selectLines(diffChunk.oldLineStart, diffChunk.oldLineEnd)
+      @editorDiffExtender1.getEditor().setCursorBufferPosition([diffChunk.oldLineStart, 0], {autoscroll: true})
       # highlight and scroll editor 2
-      @diffViewEditor2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
-      @diffViewEditor2.getEditor().setCursorBufferPosition([diffChunk.newLineStart, 0], {autoscroll: true})
+      @editorDiffExtender2.selectLines(diffChunk.newLineStart, diffChunk.newLineEnd)
+      @editorDiffExtender2.getEditor().setCursorBufferPosition([diffChunk.newLineStart, 0], {autoscroll: true})
       # update selection counter
       @footerView.showSelectionCount(selectionCount+1)
 
@@ -426,13 +429,13 @@ module.exports = SplitDiff =
   _clearDiff: ->
     @loadingView?.hide()
 
-    if @diffViewEditor1?
-      @diffViewEditor1.destroy()
-      @diffViewEditor1 = null
+    if @editorDiffExtender1?
+      @editorDiffExtender1.destroy()
+      @editorDiffExtender1 = null
 
-    if @diffViewEditor2?
-      @diffViewEditor2.destroy()
-      @diffViewEditor2 = null
+    if @editorDiffExtender2?
+      @editorDiffExtender2.destroy()
+      @editorDiffExtender2 = null
 
     if @syncScroll?
       @syncScroll.dispose()
@@ -440,95 +443,24 @@ module.exports = SplitDiff =
 
   # displays the diff visually in the editors
   _displayDiff: (editors, computedDiff) ->
-    @diffViewEditor1 = new DiffViewEditor(editors.editor1)
-    @diffViewEditor2 = new DiffViewEditor(editors.editor2)
+    #@editorDiffExtender1 = new EditorDiffExtender(editors.editor1)
+    #@editorDiffExtender2 = new EditorDiffExtender(editors.editor2)
+    @diffView = new DiffView(editors)
+    [@editorDiffExtender1, @editorDiffExtender2] = @diffView.getEditorDiffExtenders()
 
     leftColor = @_getConfig('leftEditorColor')
     rightColor = @_getConfig('rightEditorColor')
     if leftColor == 'green'
-      @diffViewEditor1.setLineHighlights(computedDiff.removedLines, 'added')
+      @editorDiffExtender1.setLineHighlights(computedDiff.removedLines, 'added')
     else
-      @diffViewEditor1.setLineHighlights(computedDiff.removedLines, 'removed')
+      @editorDiffExtender1.setLineHighlights(computedDiff.removedLines, 'removed')
     if rightColor == 'green'
-      @diffViewEditor2.setLineHighlights(computedDiff.addedLines, 'added')
+      @editorDiffExtender2.setLineHighlights(computedDiff.addedLines, 'added')
     else
-      @diffViewEditor2.setLineHighlights(computedDiff.addedLines, 'removed')
+      @editorDiffExtender2.setLineHighlights(computedDiff.addedLines, 'removed')
 
-    @diffViewEditor1.setLineOffsets(computedDiff.oldLineOffsets)
-    @diffViewEditor2.setLineOffsets(computedDiff.newLineOffsets)
-
-  # puts the chunks into order so nextDiff and prevDiff are in order
-  _evaluateDiffOrder: (chunks) ->
-    oldLineNumber = 0
-    newLineNumber = 0
-    prevChunk = null
-    # mapping of chunks between the two panes
-    diffChunks = []
-
-    for c in chunks
-      if c.added?
-        if prevChunk? && prevChunk.removed?
-          diffChunk =
-            newLineStart: newLineNumber
-            newLineEnd: newLineNumber + c.count
-            oldLineStart: oldLineNumber - prevChunk.count
-            oldLineEnd: oldLineNumber
-          diffChunks.push(diffChunk)
-          prevChunk = null
-        else
-          prevChunk = c
-
-        newLineNumber += c.count
-      else if c.removed?
-        if prevChunk? && prevChunk.added?
-          diffChunk =
-            newLineStart: newLineNumber - prevChunk.count
-            newLineEnd: newLineNumber
-            oldLineStart: oldLineNumber
-            oldLineEnd: oldLineNumber + c.count
-          diffChunks.push(diffChunk)
-          prevChunk = null
-        else
-          prevChunk = c
-
-        oldLineNumber += c.count
-      else
-        if prevChunk? && prevChunk.added?
-          diffChunk =
-            newLineStart: (newLineNumber - prevChunk.count)
-            newLineEnd: newLineNumber
-            oldLineStart: oldLineNumber
-            oldLineEnd: oldLineNumber
-          diffChunks.push(diffChunk)
-        else if prevChunk? && prevChunk.removed?
-          diffChunk =
-            newLineStart: newLineNumber
-            newLineEnd: newLineNumber
-            oldLineStart: (oldLineNumber - prevChunk.count)
-            oldLineEnd: oldLineNumber
-          diffChunks.push(diffChunk)
-
-        prevChunk = null
-        oldLineNumber += c.count
-        newLineNumber += c.count
-
-    # add the prevChunk if the loop finished
-    if prevChunk? && prevChunk.added?
-      diffChunk =
-        newLineStart: (newLineNumber - prevChunk.count)
-        newLineEnd: newLineNumber
-        oldLineStart: oldLineNumber
-        oldLineEnd: oldLineNumber
-      diffChunks.push(diffChunk)
-    else if prevChunk? && prevChunk.removed?
-      diffChunk =
-        newLineStart: newLineNumber
-        newLineEnd: newLineNumber
-        oldLineStart: (oldLineNumber - prevChunk.count)
-        oldLineEnd: oldLineNumber
-      diffChunks.push(diffChunk)
-
-    return diffChunks
+    @editorDiffExtender1.setLineOffsets(computedDiff.oldLineOffsets)
+    @editorDiffExtender2.setLineOffsets(computedDiff.newLineOffsets)
 
   # highlights the word differences between lines
   _highlightWordDiff: (chunks) ->
@@ -549,44 +481,44 @@ module.exports = SplitDiff =
           excessLines = (c.newLineEnd - c.newLineStart) - lineRange
         # figure out diff between lines and highlight
         for i in [0 ... lineRange] by 1
-          wordDiff = ComputeWordDiff.computeWordDiff(@diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i), @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i))
+          wordDiff = ComputeWordDiff.computeWordDiff(@editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + i), @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + i))
           if leftColor == 'green'
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'added', isWhitespaceIgnored)
+            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'removed', isWhitespaceIgnored)
+            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'removed', isWhitespaceIgnored)
           if rightColor == 'green'
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'added', isWhitespaceIgnored)
+            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'removed', isWhitespaceIgnored)
+            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'removed', isWhitespaceIgnored)
         # fully highlight extra lines
         for j in [0 ... excessLines] by 1
           # check whether excess line is in editor1 or editor2
           if (c.newLineEnd - c.newLineStart) < (c.oldLineEnd - c.oldLineStart)
             if leftColor == 'green'
-              @diffViewEditor1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
+              @editorDiffExtender1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
             else
-              @diffViewEditor1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
+              @editorDiffExtender1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
           else if (c.newLineEnd - c.newLineStart) > (c.oldLineEnd - c.oldLineStart)
             if rightColor == 'green'
-              @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
+              @editorDiffExtender2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
             else
-              @diffViewEditor2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
+              @editorDiffExtender2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
       else if c.newLineStart?
         # fully highlight chunks that don't match up to another
         lineRange = c.newLineEnd - c.newLineStart
         for i in [0 ... lineRange] by 1
           if rightColor == 'green'
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'added', isWhitespaceIgnored)
+            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @diffViewEditor2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'removed', isWhitespaceIgnored)
+            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'removed', isWhitespaceIgnored)
       else if c.oldLineStart?
         # fully highlight chunks that don't match up to another
         lineRange = c.oldLineEnd - c.oldLineStart
         for i in [0 ... lineRange] by 1
           if leftColor == 'green'
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'added', isWhitespaceIgnored)
+            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'added', isWhitespaceIgnored)
           else
-            @diffViewEditor1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @diffViewEditor1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'removed', isWhitespaceIgnored)
+            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'removed', isWhitespaceIgnored)
 
 
   _getConfig: (config) ->
