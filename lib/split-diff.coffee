@@ -16,7 +16,6 @@ module.exports = SplitDiff =
   editorSubscriptions: null
   linkedDiffChunks: null
   diffChunkPointer: 0
-  isFirstChunkSelect: true
   isEnabled: false
   wasEditor1Created: false
   wasEditor2Created: false
@@ -89,7 +88,6 @@ module.exports = SplitDiff =
 
     # reset all variables
     @diffChunkPointer = 0
-    @isFirstChunkSelect = true
     @wasEditor1Created = false
     @wasEditor2Created = false
     @hasGitRepo = false
@@ -109,59 +107,18 @@ module.exports = SplitDiff =
 
   # called by "Move to previous diff" command
   prevDiff: ->
-    # TODO make sure to check if diffView exists?
     if @diffView?
       selectedIndex = @diffView.prevDiff()
       if @footerView?
         @footerView.showSelectionCount( selectedIndex + 1 )
 
   copyChunkToRight: ->
-    if @editorDiffExtender1 && @editorDiffExtender2
-      linesToMove = @editorDiffExtender1.getCursorDiffLines()
-
-      if linesToMove.length == 0
-        atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
-
-      offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
-      for lineRange in linesToMove
-        for diffChunk in @linkedDiffChunks
-          if lineRange.start.row == diffChunk.oldLineStart
-            moveText = @editorDiffExtender1.getEditor().getTextInBufferRange([[diffChunk.oldLineStart, 0], [diffChunk.oldLineEnd, 0]])
-            lastBufferRow = @editorDiffExtender2.getEditor().getLastBufferRow()
-            # insert new line if the chunk we want to copy will be below the last line of the other editor
-            if (diffChunk.newLineStart + offset) > lastBufferRow
-              @editorDiffExtender2.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
-              @editorDiffExtender2.getEditor().insertNewline()
-            @editorDiffExtender2.getEditor().setTextInBufferRange([[diffChunk.newLineStart + offset, 0], [diffChunk.newLineEnd + offset, 0]], moveText)
-            # offset will be the amount of lines to be copied minus the amount of lines overwritten
-            offset += (diffChunk.oldLineEnd - diffChunk.oldLineStart) - (diffChunk.newLineEnd - diffChunk.newLineStart)
-            # move the selection pointer back so the next diff chunk is not skipped
-            if @editorDiffExtender1.hasSelection() || @editorDiffExtender2.hasSelection()
-              @diffChunkPointer--
+    if @diffView?
+      @diffView.copyToRight()
 
   copyChunkToLeft: ->
-    if @editorDiffExtender1 && @editorDiffExtender2
-      linesToMove = @editorDiffExtender2.getCursorDiffLines()
-
-      if linesToMove.length == 0
-        atom.notifications.addWarning('Split Diff', {detail: @copyHelpMsg, dismissable: false, icon: 'diff'})
-
-      offset = 0 # keep track of line offset (used when there are multiple chunks being moved)
-      for lineRange in linesToMove
-        for diffChunk in @linkedDiffChunks
-          if lineRange.start.row == diffChunk.newLineStart
-            moveText = @editorDiffExtender2.getEditor().getTextInBufferRange([[diffChunk.newLineStart, 0], [diffChunk.newLineEnd, 0]])
-            lastBufferRow = @editorDiffExtender1.getEditor().getLastBufferRow()
-            # insert new line if the chunk we want to copy will be below the last line of the other editor
-            if (diffChunk.oldLineStart + offset) > lastBufferRow
-              @editorDiffExtender1.getEditor().setCursorBufferPosition([lastBufferRow, 0], {autoscroll: false})
-              @editorDiffExtender1.getEditor().insertNewline()
-            @editorDiffExtender1.getEditor().setTextInBufferRange([[diffChunk.oldLineStart + offset, 0], [diffChunk.oldLineEnd + offset, 0]], moveText)
-            # offset will be the amount of lines to be copied minus the amount of lines overwritten
-            offset += (diffChunk.newLineEnd - diffChunk.newLineStart) - (diffChunk.oldLineEnd - diffChunk.oldLineStart)
-            # move the selection pointer back so the next diff chunk is not skipped
-            if @editorDiffExtender1.hasSelection() || @editorDiffExtender2.hasSelection()
-              @diffChunkPointer--
+    if @diffView?
+      @diffView.copyToLeft()
 
   # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
