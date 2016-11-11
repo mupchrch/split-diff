@@ -1,10 +1,10 @@
 {CompositeDisposable, Directory, File} = require 'atom'
 DiffView = require './diff-view'
 EditorDiffExtender = require './editor-diff-extender'
-LoadingView = require './loading-view'
-FooterView = require './footer-view'
+LoadingView = require './ui/loading-view'
+FooterView = require './ui/footer-view'
 SyncScroll = require './sync-scroll'
-configSchema = require "./config-schema"
+configSchema = require './config-schema'
 path = require 'path'
 
 module.exports = SplitDiff =
@@ -22,7 +22,6 @@ module.exports = SplitDiff =
   hasGitRepo: false
   process: null
   loadingView: null
-  copyHelpMsg: 'Place your cursor in a chunk first!'
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
