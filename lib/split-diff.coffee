@@ -40,10 +40,10 @@ module.exports = SplitDiff =
           @diffPanes()
       'split-diff:copy-to-right': =>
         if @isEnabled
-          @copyChunkToRight()
+          @copyToRight()
       'split-diff:copy-to-left': =>
         if @isEnabled
-          @copyChunkToLeft()
+          @copyToLeft()
       'split-diff:disable': => @disable()
       'split-diff:ignore-whitespace': => @toggleIgnoreWhitespace()
       'split-diff:toggle': => @toggle()
@@ -111,11 +111,11 @@ module.exports = SplitDiff =
       if @footerView?
         @footerView.showSelectionCount( selectedIndex + 1 )
 
-  copyChunkToRight: ->
+  copyToRight: ->
     if @diffView?
       @diffView.copyToRight()
 
-  copyChunkToLeft: ->
+  copyToLeft: ->
     if @diffView?
       @diffView.copyToLeft()
 
@@ -128,6 +128,7 @@ module.exports = SplitDiff =
     @editorSubscriptions = new CompositeDisposable()
 
     editors = @_getVisibleEditors()
+    @diffView = new DiffView(editors)
 
     # add listeners
     @editorSubscriptions.add editors.editor1.onDidStopChanging =>
@@ -375,22 +376,21 @@ module.exports = SplitDiff =
 
   # displays the diff visually in the editors
   _displayDiff: (editors, computedDiff) ->
-    @diffView = new DiffView(editors, computedDiff)
     [@editorDiffExtender1, @editorDiffExtender2] = @diffView.getEditorDiffExtenders()
 
-    leftColor = @_getConfig('leftEditorColor')
-    rightColor = @_getConfig('rightEditorColor')
-    if leftColor == 'green'
-      @editorDiffExtender1.setLineHighlights(computedDiff.removedLines, 'added')
-    else
-      @editorDiffExtender1.setLineHighlights(computedDiff.removedLines, 'removed')
-    if rightColor == 'green'
-      @editorDiffExtender2.setLineHighlights(computedDiff.addedLines, 'added')
-    else
-      @editorDiffExtender2.setLineHighlights(computedDiff.addedLines, 'removed')
+    leftHighlightType = ''
+    rightHighlightType = ''
 
-    @editorDiffExtender1.setLineOffsets(computedDiff.oldLineOffsets)
-    @editorDiffExtender2.setLineOffsets(computedDiff.newLineOffsets)
+    if @_getConfig('leftEditorColor') == 'green'
+      leftHighlightType = 'added'
+    else
+      leftHighlightType = 'removed'
+    if @_getConfig('rightEditorColor') == 'green'
+      rightHighlightType = 'added'
+    else
+      rightHighlightType = 'removed'
+
+    @diffView.displayDiff(computedDiff, leftHighlightType, rightHighlightType)
 
   # highlights the word differences between lines
   _highlightWordDiff: (chunks) ->
