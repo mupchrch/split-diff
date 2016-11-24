@@ -1,6 +1,5 @@
 {CompositeDisposable, Directory, File} = require 'atom'
 DiffView = require './diff-view'
-EditorDiffExtender = require './editor-diff-extender'
 LoadingView = require './ui/loading-view'
 FooterView = require './ui/footer-view'
 SyncScroll = require './sync-scroll'
@@ -11,17 +10,12 @@ module.exports = SplitDiff =
   diffView: null
   config: configSchema
   subscriptions: null
-  editorDiffExtender1: null
-  editorDiffExtender2: null
   editorSubscriptions: null
-  linkedDiffChunks: null
-  diffChunkPointer: 0
   isEnabled: false
   wasEditor1Created: false
   wasEditor2Created: false
   hasGitRepo: false
   process: null
-  loadingView: null
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
@@ -70,23 +64,27 @@ module.exports = SplitDiff =
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
 
-    if @editorDiffExtender1?
+    if @diffView?
       if @wasEditor1Created
-        @editorDiffExtender1.cleanUp()
-
-    if @editorDiffExtender2?
+        @diffView.cleanUpEditor(1)
       if @wasEditor2Created
-        @editorDiffExtender2.cleanUp()
+        @diffView.cleanUpEditor(2)
+      @diffView.destroy()
+      @diffView = null
 
-    # remove bottom panel
+    # remove views
     if @footerView?
       @footerView.destroy()
       @footerView = null
+    if @loadingView?
+      @loadingView.destroy()
+      @loadingView = null
 
-    @_clearDiff()
+    if @syncScroll?
+      @syncScroll.dispose()
+      @syncScroll = null
 
     # reset all variables
-    @diffChunkPointer = 0
     @wasEditor1Created = false
     @wasEditor2Created = false
     @hasGitRepo = false
@@ -96,6 +94,7 @@ module.exports = SplitDiff =
   toggleIgnoreWhitespace: ->
     isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
     @_setConfig('ignoreWhitespace', !isWhitespaceIgnored)
+    @footerView?.setIgnoreWhitespace(!isWhitespaceIgnored)
 
   # called by "Move to next diff" command
   nextDiff: ->
@@ -111,10 +110,12 @@ module.exports = SplitDiff =
       if @footerView?
         @footerView.showSelectionCount( selectedIndex + 1 )
 
+  # called by "Copy to right" command
   copyToRight: ->
     if @diffView?
       @diffView.copyToRight()
 
+  # called by "Copy to left" command
   copyToLeft: ->
     if @diffView?
       @diffView.copyToLeft()
@@ -142,11 +143,9 @@ module.exports = SplitDiff =
     @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
       @updateDiff(editors)
 
-    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
-
     # add the bottom UI panel
     if !@footerView?
-      @footerView = new FooterView(isWhitespaceIgnored)
+      @footerView = new FooterView(@_getConfig('ignoreWhitespace'))
       @footerView.createPanel()
     @footerView.show()
 
@@ -187,12 +186,12 @@ module.exports = SplitDiff =
   updateDiff: (editors) ->
     @isEnabled = true
 
+    # if there is a diff being computed in the background, cancel it
     if @process?
       @process.kill()
       @process = null
 
     isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
-
     editorPaths = @_createTempFiles(editors)
 
     # create the loading view if it doesn't exist yet
@@ -205,7 +204,6 @@ module.exports = SplitDiff =
     {BufferedNodeProcess} = require 'atom'
     command = path.resolve __dirname, "./compute-diff.js"
     args = [editorPaths.editor1Path, editorPaths.editor2Path, isWhitespaceIgnored]
-    computedDiff = ''
     theOutput = ''
     stdout = (output) =>
       theOutput = output
@@ -227,27 +225,20 @@ module.exports = SplitDiff =
 
   # resumes after the compute diff process returns
   _resumeUpdateDiff: (editors, computedDiff) ->
-    @linkedDiffChunks = computedDiff.chunks
-    @footerView?.setNumDifferences(@linkedDiffChunks.length)
+    @diffView.clearDiff()
+    if @syncScroll?
+      @syncScroll.dispose()
+      @syncScroll = null
 
-    # make the last chunk equal size on both screens so the editors retain sync scroll #58
-    if @linkedDiffChunks.length > 0
-      lastDiffChunk = @linkedDiffChunks[@linkedDiffChunks.length-1]
-      oldChunkRange = lastDiffChunk.oldLineEnd - lastDiffChunk.oldLineStart
-      newChunkRange = lastDiffChunk.newLineEnd - lastDiffChunk.newLineStart
-      if oldChunkRange > newChunkRange
-        # make the offset as large as needed to make the chunk the same size in both editors
-        computedDiff.newLineOffsets[lastDiffChunk.newLineStart + newChunkRange] = oldChunkRange - newChunkRange
-      else if newChunkRange > oldChunkRange
-        # make the offset as large as needed to make the chunk the same size in both editors
-        computedDiff.oldLineOffsets[lastDiffChunk.oldLineStart + oldChunkRange] = newChunkRange - oldChunkRange
+    leftHighlightType = 'added'
+    rightHighlightType = 'removed'
+    if @_getConfig('leftEditorColor') == 'red'
+      leftHighlightType = 'removed'
+    if @_getConfig('rightEditorColor') == 'green'
+      rightHighlightType = 'added'
+    @diffView.displayDiff(computedDiff, leftHighlightType, rightHighlightType, @_getConfig('diffWords'), @_getConfig('ignoreWhitespace'))
 
-    @_clearDiff()
-    @_displayDiff(editors, computedDiff)
-
-    isWordDiffEnabled = @_getConfig('diffWords')
-    if isWordDiffEnabled
-      @_highlightWordDiff(@linkedDiffChunks)
+    @footerView?.setNumDifferences(@diffView.getNumDifferences())
 
     scrollSyncType = @_getConfig('scrollSyncType')
     if scrollSyncType == 'Vertical + Horizontal'
@@ -357,98 +348,6 @@ module.exports = SplitDiff =
       editor2Path: editor2Path
 
     return editorPaths
-
-  # removes diff and sync scroll
-  _clearDiff: ->
-    @loadingView?.hide()
-
-    if @editorDiffExtender1?
-      @editorDiffExtender1.destroy()
-      @editorDiffExtender1 = null
-
-    if @editorDiffExtender2?
-      @editorDiffExtender2.destroy()
-      @editorDiffExtender2 = null
-
-    if @syncScroll?
-      @syncScroll.dispose()
-      @syncScroll = null
-
-  # displays the diff visually in the editors
-  _displayDiff: (editors, computedDiff) ->
-    [@editorDiffExtender1, @editorDiffExtender2] = @diffView.getEditorDiffExtenders()
-
-    leftHighlightType = ''
-    rightHighlightType = ''
-
-    if @_getConfig('leftEditorColor') == 'green'
-      leftHighlightType = 'added'
-    else
-      leftHighlightType = 'removed'
-    if @_getConfig('rightEditorColor') == 'green'
-      rightHighlightType = 'added'
-    else
-      rightHighlightType = 'removed'
-
-    @diffView.displayDiff(computedDiff, leftHighlightType, rightHighlightType)
-
-  # highlights the word differences between lines
-  _highlightWordDiff: (chunks) ->
-    ComputeWordDiff = require './compute-word-diff'
-    leftColor = @_getConfig('leftEditorColor')
-    rightColor = @_getConfig('rightEditorColor')
-    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
-    for c in chunks
-      # make sure this chunk matches to another
-      if c.newLineStart? && c.oldLineStart?
-        lineRange = 0
-        excessLines = 0
-        if (c.newLineEnd - c.newLineStart) < (c.oldLineEnd - c.oldLineStart)
-          lineRange = c.newLineEnd - c.newLineStart
-          excessLines = (c.oldLineEnd - c.oldLineStart) - lineRange
-        else
-          lineRange = c.oldLineEnd - c.oldLineStart
-          excessLines = (c.newLineEnd - c.newLineStart) - lineRange
-        # figure out diff between lines and highlight
-        for i in [0 ... lineRange] by 1
-          wordDiff = ComputeWordDiff.computeWordDiff(@editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + i), @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + i))
-          if leftColor == 'green'
-            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'added', isWhitespaceIgnored)
-          else
-            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, wordDiff.removedWords, 'removed', isWhitespaceIgnored)
-          if rightColor == 'green'
-            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'added', isWhitespaceIgnored)
-          else
-            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, wordDiff.addedWords, 'removed', isWhitespaceIgnored)
-        # fully highlight extra lines
-        for j in [0 ... excessLines] by 1
-          # check whether excess line is in editor1 or editor2
-          if (c.newLineEnd - c.newLineStart) < (c.oldLineEnd - c.oldLineStart)
-            if leftColor == 'green'
-              @editorDiffExtender1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
-            else
-              @editorDiffExtender1.setWordHighlights(c.oldLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
-          else if (c.newLineEnd - c.newLineStart) > (c.oldLineEnd - c.oldLineStart)
-            if rightColor == 'green'
-              @editorDiffExtender2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'added', isWhitespaceIgnored)
-            else
-              @editorDiffExtender2.setWordHighlights(c.newLineStart + lineRange + j, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + lineRange + j)}], 'removed', isWhitespaceIgnored)
-      else if c.newLineStart?
-        # fully highlight chunks that don't match up to another
-        lineRange = c.newLineEnd - c.newLineStart
-        for i in [0 ... lineRange] by 1
-          if rightColor == 'green'
-            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'added', isWhitespaceIgnored)
-          else
-            @editorDiffExtender2.setWordHighlights(c.newLineStart + i, [{changed: true, value: @editorDiffExtender2.getEditor().lineTextForBufferRow(c.newLineStart + i)}], 'removed', isWhitespaceIgnored)
-      else if c.oldLineStart?
-        # fully highlight chunks that don't match up to another
-        lineRange = c.oldLineEnd - c.oldLineStart
-        for i in [0 ... lineRange] by 1
-          if leftColor == 'green'
-            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'added', isWhitespaceIgnored)
-          else
-            @editorDiffExtender1.setWordHighlights(c.oldLineStart + i, [{changed: true, value: @editorDiffExtender1.getEditor().lineTextForBufferRow(c.oldLineStart + i)}], 'removed', isWhitespaceIgnored)
 
 
   _getConfig: (config) ->

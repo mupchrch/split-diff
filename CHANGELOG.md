@@ -1,3 +1,7 @@
+## 1.0.7 - XXXX-XX-XX
+* Fixed issue where toggling ignore whitespace from command wouldn't update footer bar
+* Huge code refactor!
+
 ## 1.0.6 - 2016-10-24
 * Fixed next/prev diff highlight skipping a selection after copying to right/left
 * Added keybinding for copy to left/right and scoped it to just the editors #73
