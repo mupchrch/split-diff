@@ -1,6 +1,9 @@
-## 1.0.7 - XXXX-XX-XX
+## 1.1.0 - XXXX-XX-XX
+* Added ability to diff active file with right click in tree view or tab header #9
 * Fixed issue where toggling ignore whitespace from command wouldn't update footer bar
-* Huge code refactor!
+* Fixed issue where one line editor would always pop notification about differing line endings
+* Fixed poor user experience when auto opening text editors in new panes (Now tries to reuse panes more often instead of greedily creating new ones)
+* Large code refactor
 
 ## 1.0.6 - 2016-10-24
 * Fixed next/prev diff highlight skipping a selection after copying to right/left

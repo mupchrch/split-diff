@@ -1,18 +1,21 @@
 'context-menu':
   'atom-text-editor': [
-    'label': 'Split Diff'
-    'submenu':[
-      { 'label': 'Toggle', 'command': 'split-diff:toggle' }
+    label: 'Split Diff'
+    submenu:[
+      { label: 'Toggle', command: 'split-diff:toggle' }
     ]
+  ]
+  '.tree-view .file, .tab.texteditor': [
+    { label: 'Diff with Active File', command: 'split-diff:enable' }
   ]
 
 'menu': [
   {
-    'label': 'Packages'
-    'submenu': [
-      'label': 'Split Diff'
-      'submenu': [
-        { 'label': 'Toggle', 'command': 'split-diff:toggle' }
+    label: 'Packages'
+    submenu: [
+      label: 'Split Diff'
+      submenu: [
+        { label: 'Toggle', command: 'split-diff:toggle' }
       ]
     ]
   }

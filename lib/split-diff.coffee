@@ -20,8 +20,11 @@ module.exports = SplitDiff =
   activate: (state) ->
     @subscriptions = new CompositeDisposable()
 
-    @subscriptions.add atom.commands.add 'atom-workspace',
-      'split-diff:enable': => @diffPanes()
+    @subscriptions.add atom.commands.add 'atom-workspace, .tree-view .selected, .tab.texteditor',
+      'split-diff:enable': (e) =>
+        console.log(e)
+        @diffPanes(e)
+        e.stopPropagation()
       'split-diff:next-diff': =>
         if @isEnabled
           @nextDiff()
@@ -48,7 +51,7 @@ module.exports = SplitDiff =
 
   # called by "toggle" command
   # toggles split diff
-  toggle: ->
+  toggle: () ->
     if @isEnabled
       @disable()
     else
@@ -122,43 +125,69 @@ module.exports = SplitDiff =
 
   # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
-  diffPanes: ->
+  # event is an optional argument of a file path to diff with current
+  diffPanes: (event) ->
     # in case enable was called again
     @disable()
 
     @editorSubscriptions = new CompositeDisposable()
 
-    editors = @_getVisibleEditors()
-    @diffView = new DiffView(editors)
+    if event?.currentTarget.classList.contains('tab')
+      filePath = event.currentTarget.path
+      editorsPromise = @_getEditorsForDiffWithActive(filePath)
+    else if event?.currentTarget.classList.contains('list-item') && event?.currentTarget.classList.contains('file')
+      filePath = event.currentTarget.getPath()
+      editorsPromise = @_getEditorsForDiffWithActive(filePath)
+    else
+      editorsPromise = @_getEditorsForQuickDiff()
 
-    # add listeners
-    @editorSubscriptions.add editors.editor1.onDidStopChanging =>
-      @updateDiff(editors)
-    @editorSubscriptions.add editors.editor2.onDidStopChanging =>
-      @updateDiff(editors)
-    @editorSubscriptions.add editors.editor1.onDidDestroy =>
-      @disable()
-    @editorSubscriptions.add editors.editor2.onDidDestroy =>
-      @disable()
-    @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
-      @updateDiff(editors)
+    editorsPromise.then ((editors) ->
+      if editors == null
+        return
+      @_setupVisibleEditors(editors.editor1, editors.editor2)
+      @diffView = new DiffView(editors)
 
-    # add the bottom UI panel
-    if !@footerView?
-      @footerView = new FooterView(@_getConfig('ignoreWhitespace'))
-      @footerView.createPanel()
-    @footerView.show()
+      # add listeners
+      @editorSubscriptions.add editors.editor1.onDidStopChanging =>
+        @updateDiff(editors)
+      @editorSubscriptions.add editors.editor2.onDidStopChanging =>
+        @updateDiff(editors)
+      @editorSubscriptions.add editors.editor1.onDidDestroy =>
+        @disable()
+      @editorSubscriptions.add editors.editor2.onDidDestroy =>
+        @disable()
+      @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
+        @updateDiff(editors)
 
-    # update diff if there is no git repo (no onchange fired)
-    if !@hasGitRepo
-      @updateDiff(editors)
+      # add the bottom UI panel
+      if !@footerView?
+        @footerView = new FooterView(@_getConfig('ignoreWhitespace'))
+        @footerView.createPanel()
+      @footerView.show()
 
-    # add application menu items
-    @editorSubscriptions.add atom.menu.add [
-      {
-        'label': 'Packages'
-        'submenu': [
-          'label': 'Split Diff'
+      # update diff if there is no git repo (no onchange fired)
+      if !@hasGitRepo
+        @updateDiff(editors)
+
+      # add application menu items
+      @editorSubscriptions.add atom.menu.add [
+        {
+          'label': 'Packages'
+          'submenu': [
+            'label': 'Split Diff'
+            'submenu': [
+              { 'label': 'Ignore Whitespace', 'command': 'split-diff:ignore-whitespace' }
+              { 'label': 'Move to Next Diff', 'command': 'split-diff:next-diff' }
+              { 'label': 'Move to Previous Diff', 'command': 'split-diff:prev-diff' }
+              { 'label': 'Copy to Right', 'command': 'split-diff:copy-to-right'}
+              { 'label': 'Copy to Left', 'command': 'split-diff:copy-to-left'}
+            ]
+          ]
+        }
+      ]
+      @editorSubscriptions.add atom.contextMenu.add {
+        'atom-text-editor': [{
+          'label': 'Split Diff',
           'submenu': [
             { 'label': 'Ignore Whitespace', 'command': 'split-diff:ignore-whitespace' }
             { 'label': 'Move to Next Diff', 'command': 'split-diff:next-diff' }
@@ -166,21 +195,9 @@ module.exports = SplitDiff =
             { 'label': 'Copy to Right', 'command': 'split-diff:copy-to-right'}
             { 'label': 'Copy to Left', 'command': 'split-diff:copy-to-left'}
           ]
-        ]
+        }]
       }
-    ]
-    @editorSubscriptions.add atom.contextMenu.add {
-      'atom-text-editor': [{
-        'label': 'Split Diff',
-        'submenu': [
-          { 'label': 'Ignore Whitespace', 'command': 'split-diff:ignore-whitespace' }
-          { 'label': 'Move to Next Diff', 'command': 'split-diff:next-diff' }
-          { 'label': 'Move to Previous Diff', 'command': 'split-diff:prev-diff' }
-          { 'label': 'Copy to Right', 'command': 'split-diff:copy-to-right'}
-          { 'label': 'Copy to Left', 'command': 'split-diff:copy-to-left'}
-        ]
-      }]
-    }
+      ).bind(this) # make sure the scope is correct
 
   # called by both diffPanes and the editor subscription to update the diff
   updateDiff: (editors) ->
@@ -248,12 +265,13 @@ module.exports = SplitDiff =
       @syncScroll = new SyncScroll(editors.editor1, editors.editor2, false)
       @syncScroll.syncPositions()
 
-  # gets two visible editors
-  # auto opens new editors so there are two to diff with
-  _getVisibleEditors: ->
+  # Gets the first two visible editors found or creates them as needed.
+  # Returns a Promise which yields a value of {editor1: TextEditor, editor2: TextEditor}
+  _getEditorsForQuickDiff: () ->
     editor1 = null
     editor2 = null
 
+    # try to find the first two editors
     panes = atom.workspace.getPanes()
     for p in panes
       activeItem = p.getActiveItem()
@@ -268,15 +286,52 @@ module.exports = SplitDiff =
     if editor1 == null
       editor1 = atom.workspace.buildTextEditor()
       @wasEditor1Created = true
-      leftPane = atom.workspace.getActivePane()
-      leftPane.addItem(editor1)
+      # add first editor to the first pane
+      panes[0].addItem(editor1)
+      panes[0].activateItem(editor1)
     if editor2 == null
       editor2 = atom.workspace.buildTextEditor()
       @wasEditor2Created = true
       editor2.setGrammar(editor1.getGrammar())
-      rightPane = atom.workspace.getActivePane().splitRight()
-      rightPane.addItem(editor2)
+      rightPaneIndex = panes.indexOf(atom.workspace.paneForItem(editor1)) + 1
+      if panes[rightPaneIndex]
+        # add second editor to existing pane to the right of first editor
+        panes[rightPaneIndex].addItem(editor2)
+        panes[rightPaneIndex].activateItem(editor2)
+      else
+        # no existing pane so split right
+        atom.workspace.paneForItem(editor1).splitRight({items: [editor2]})
 
+    return Promise.resolve({editor1: editor1, editor2: editor2})
+
+  # Gets the active editor and opens the specified file to the right of it
+  # Returns a Promise which yields a value of {editor1: TextEditor, editor2: TextEditor}
+  _getEditorsForDiffWithActive: (filePath) ->
+    activeEditor = atom.workspace.getActiveTextEditor()
+    if activeEditor?
+      editor1 = activeEditor
+      @wasEditor2Created = true
+      panes = atom.workspace.getPanes()
+      # get index of pane following active editor pane
+      rightPaneIndex = panes.indexOf(atom.workspace.paneForItem(editor1)) + 1
+      # pane is created if there is not one to the right of the active editor
+      rightPane = panes[rightPaneIndex] || atom.workspace.paneForItem(editor1).splitRight()
+      if editor1.getPath() == filePath
+        # if diffing with itself, set filePath to null so an empty editor is
+        # opened, which will cause a git diff
+        filePath = null
+      editor2Promise = atom.workspace.openURIInPane(filePath, rightPane)
+
+      return editor2Promise.then (editor2) ->
+        return {editor1: editor1, editor2: editor2}
+    else
+      noActiveEditorMsg = 'No active file found! (Try focusing a text editor)'
+      atom.notifications.addWarning('Split Diff', {detail: noActiveEditorMsg, dismissable: false, icon: 'diff'})
+      return Promise.resolve(null)
+
+    return Promise.resolve(null)
+
+  _setupVisibleEditors: (editor1, editor2) ->
     BufferExtender = require './buffer-extender'
     buffer1LineEnding = (new BufferExtender(editor1.getBuffer())).getLineEnding()
 
@@ -302,16 +357,10 @@ module.exports = SplitDiff =
       atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
 
     buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()
-    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding) && shouldNotify
+    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding) && editor1.getLineCount() != 1 && editor2.getLineCount() != 1 && shouldNotify
       # pop warning if the line endings differ and we haven't done anything about it
       lineEndingMsg = 'Warning: Line endings differ!'
       atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
-
-    editors =
-      editor1: editor1
-      editor2: editor2
-
-    return editors
 
   _setupGitRepo: (editor1, editor2) ->
     editor1Path = editor1.getPath()
