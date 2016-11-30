@@ -22,7 +22,6 @@ module.exports = SplitDiff =
 
     @subscriptions.add atom.commands.add 'atom-workspace, .tree-view .selected, .tab.texteditor',
       'split-diff:enable': (e) =>
-        console.log(e)
         @diffPanes(e)
         e.stopPropagation()
       'split-diff:next-diff': =>
@@ -103,25 +102,25 @@ module.exports = SplitDiff =
   nextDiff: ->
     if @diffView?
       selectedIndex = @diffView.nextDiff()
-      if @footerView?
-        @footerView.showSelectionCount( selectedIndex + 1 )
+      @footerView?.showSelectionCount( selectedIndex + 1 )
 
   # called by "Move to previous diff" command
   prevDiff: ->
     if @diffView?
       selectedIndex = @diffView.prevDiff()
-      if @footerView?
-        @footerView.showSelectionCount( selectedIndex + 1 )
+      @footerView?.showSelectionCount( selectedIndex + 1 )
 
   # called by "Copy to right" command
   copyToRight: ->
     if @diffView?
       @diffView.copyToRight()
+      @footerView?.hideSelectionCount()
 
   # called by "Copy to left" command
   copyToLeft: ->
     if @diffView?
       @diffView.copyToLeft()
+      @footerView?.hideSelectionCount()
 
   # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed

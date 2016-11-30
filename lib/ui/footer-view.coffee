@@ -157,5 +157,10 @@ class FooterView
     @selectionCountValue.textContent = count
     @selectionCount.classList.remove('hidden')
 
+  # hide the selection counter next to the number of differences
+  hideSelectionCount: () ->
+    @selectionCount.classList.add('hidden')
+
+  # set the state of the ignore whitespace checkbox
   setIgnoreWhitespace: (isWhitespaceIgnored) ->
     @ignoreWhitespaceValue.checked = isWhitespaceIgnored
