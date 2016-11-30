@@ -1,3 +1,12 @@
+## 1.1.0 - 2016-11-29
+* Added ability to diff active file with right click in tree view or tab header #9
+* Fixed toggling ignore whitespace via command not updating its state in the footer bar
+* Fixed issue where one line editor would always pop notification about differing line endings
+* Fixed word diff not working for line diffed against an empty line
+* Fixed wrong current selection counter after copying last chunk to other editor
+* Fixed poor user experience when auto opening text editors in new panes (Now tries to reuse panes more often instead of greedily creating new ones)
+* Large code refactor
+
 ## 1.0.6 - 2016-10-24
 * Fixed next/prev diff highlight skipping a selection after copying to right/left
 * Added keybinding for copy to left/right and scoped it to just the editors #73

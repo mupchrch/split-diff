@@ -103,13 +103,13 @@ class FooterView
     # -------------
 
     # create ignore whitespace checkbox
-    ignoreWhitespaceValue = document.createElement('input')
-    ignoreWhitespaceValue.type = 'checkbox'
-    ignoreWhitespaceValue.id = 'ignore-whitespace-checkbox'
+    @ignoreWhitespaceValue = document.createElement('input')
+    @ignoreWhitespaceValue.type = 'checkbox'
+    @ignoreWhitespaceValue.id = 'ignore-whitespace-checkbox'
     # set checkbox value to current package ignore whitespace setting
-    ignoreWhitespaceValue.checked = isWhitespaceIgnored
+    @ignoreWhitespaceValue.checked = isWhitespaceIgnored
     # register command to checkbox
-    ignoreWhitespaceValue.addEventListener('change', () ->
+    @ignoreWhitespaceValue.addEventListener('change', () ->
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:ignore-whitespace')
     )
     # create ignore whitespace label
@@ -121,7 +121,7 @@ class FooterView
     right = document.createElement('div')
     right.classList.add('right')
     # add items to container
-    right.appendChild(ignoreWhitespaceValue)
+    right.appendChild(@ignoreWhitespaceValue)
     right.appendChild(ignoreWhitespaceLabel)
     # add settings to UI
     @element.appendChild(right)
@@ -156,3 +156,11 @@ class FooterView
   showSelectionCount: (count) ->
     @selectionCountValue.textContent = count
     @selectionCount.classList.remove('hidden')
+
+  # hide the selection counter next to the number of differences
+  hideSelectionCount: () ->
+    @selectionCount.classList.add('hidden')
+
+  # set the state of the ignore whitespace checkbox
+  setIgnoreWhitespace: (isWhitespaceIgnored) ->
+    @ignoreWhitespaceValue.checked = isWhitespaceIgnored
