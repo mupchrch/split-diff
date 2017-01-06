@@ -1,3 +1,6 @@
+## 1.1.1 - 2017-11-06
+* Fixed styling deprecations due to removal of shadow DOM #86
+
 ## 1.1.0 - 2016-11-29
 * Added ability to diff active file with right click in tree view or tab header #9
 * Fixed toggling ignore whitespace via command not updating its state in the footer bar
