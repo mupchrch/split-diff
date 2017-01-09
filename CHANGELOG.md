@@ -1,5 +1,6 @@
 ## 1.1.1 - 2017-11-06
-* Fixed styling deprecations due to removal of shadow DOM #86
+* Fixed styling deprecation warnings due to removal of shadow DOM #86
+* Fixed marker deprecation warnings due to an optional property removal in 1.8 #87
 
 ## 1.1.0 - 2016-11-29
 * Added ability to diff active file with right click in tree view or tab header #9
