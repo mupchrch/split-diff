@@ -1,6 +1,9 @@
-## 1.1.1 - 2017-11-06
-* Fixed styling deprecation warnings due to removal of shadow DOM #86
+## 1.1.2 - 2017-02-09
 * Fixed marker deprecation warnings due to an optional property removal in 1.8 #87
+* Added service API for getting marker layers and related metadata
+
+## 1.1.1 - 2017-01-09
+* Fixed styling deprecation warnings due to removal of shadow DOM #86
 
 ## 1.1.0 - 2016-11-29
 * Added ability to diff active file with right click in tree view or tab header #9

@@ -23,6 +23,13 @@
       "split-diff:prev-diff"
     ]
   },
+  "providedServices": {
+    "split-diff": {
+      "versions": {
+        "1.0.0": "provideSplitDiff"
+      }
+    }
+  },
   "repository": "https://github.com/mupchrch/split-diff",
   "license": "MIT",
   "engines": {
