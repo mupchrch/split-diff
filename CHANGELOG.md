@@ -1,3 +1,6 @@
+## 1.1.4 - 2017-02-12
+* Rerelease changes made for v1.1.2 but scoped to Atom v1.14 and greater
+
 ## 1.1.3 - 2017-02-12
 * Fixed error in Atom v1.13 due to MarkerLayer bug (rollback changes) #92
 
