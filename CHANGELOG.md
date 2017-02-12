@@ -1,3 +1,6 @@
+## 1.1.3 - 2017-02-12
+* Fixed error in Atom v1.13 due to MarkerLayer bug (rollback changes) #92
+
 ## 1.1.2 - 2017-02-09
 * Fixed marker deprecation warnings due to an optional property removal in 1.8 #87
 * Added service API for getting marker layers and related metadata

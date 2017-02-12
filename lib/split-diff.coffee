@@ -18,9 +18,8 @@ module.exports = SplitDiff =
   process: null
 
   activate: (state) ->
-    window.splitDiffResolves = []
-
     @subscriptions = new CompositeDisposable()
+
     @subscriptions.add atom.commands.add 'atom-workspace, .tree-view .selected, .tab.texteditor',
       'split-diff:enable': (e) =>
         @diffPanes(e)
@@ -255,9 +254,6 @@ module.exports = SplitDiff =
       rightHighlightType = 'added'
     @diffView.displayDiff(computedDiff, leftHighlightType, rightHighlightType, @_getConfig('diffWords'), @_getConfig('ignoreWhitespace'))
 
-    while window.splitDiffResolves?.length
-      window.splitDiffResolves.pop()(@diffView.getMarkerLayers())
-
     @footerView?.setNumDifferences(@diffView.getNumDifferences())
 
     scrollSyncType = @_getConfig('scrollSyncType')
@@ -407,12 +403,3 @@ module.exports = SplitDiff =
 
   _setConfig: (config, value) ->
     atom.config.set("split-diff.#{config}", value)
-
-
-  # --- SERVICE API ---
-  getMarkerLayers: () ->
-    new Promise (resolve, reject) ->
-      window.splitDiffResolves.push(resolve)
-
-  provideSplitDiff: ->
-    getMarkerLayers: @getMarkerLayers
