@@ -17,24 +17,30 @@ module.exports =
     type: 'boolean'
     default: false
     order: 3
+  hideTreeView:
+    title: 'Hide Tree View'
+    description: 'Hides Tree View during diff - shows when finished.'
+    type: 'boolean'
+    default: false
+    order: 4
   scrollSyncType:
     title: 'Sync Scrolling'
     description: 'Syncs the scrolling of the editors.'
     type: 'string'
     default: 'Vertical + Horizontal'
     enum: ['Vertical + Horizontal', 'Vertical', 'None']
-    order: 4
+    order: 5
   leftEditorColor:
     title: 'Left Editor Color'
     description: 'Specifies the highlight color for the left editor.'
     type: 'string'
     default: 'green'
     enum: ['green', 'red']
-    order: 5
+    order: 6
   rightEditorColor:
     title: 'Right Editor Color'
     description: 'Specifies the highlight color for the right editor.'
     type: 'string'
     default: 'red'
     enum: ['green', 'red']
-    order: 6
+    order: 7

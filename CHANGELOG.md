@@ -1,3 +1,6 @@
+## X.X.X - XXXX-XX-XX
+* Added option to automatically hide Tree View while diffing #82
+
 ## 1.1.4 - 2017-02-12
 * Rerelease changes made for v1.1.2 but scoped to Atom v1.14 and greater
 

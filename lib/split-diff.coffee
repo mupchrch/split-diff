@@ -92,6 +92,10 @@ module.exports = SplitDiff =
     @wasEditor2Created = false
     @hasGitRepo = false
 
+    # auto hide tree view while diffing #82
+    if @_getConfig('hideTreeView')
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'tree-view:show')
+
   # called by "toggle ignore whitespace" command
   # toggles ignoring whitespace and refreshes the diff
   toggleIgnoreWhitespace: ->
@@ -202,6 +206,10 @@ module.exports = SplitDiff =
   # called by both diffPanes and the editor subscription to update the diff
   updateDiff: (editors) ->
     @isEnabled = true
+
+    # auto hide tree view while diffing #82
+    if @_getConfig('hideTreeView') && document.querySelector('.tree-view')
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'tree-view:toggle')
 
     # if there is a diff being computed in the background, cancel it
     if @process?
