@@ -1,5 +1,6 @@
-## X.X.X - XXXX-XX-XX
+## 1.2.0 - 2017-02-20
 * Added option to automatically hide Tree View while diffing #82
+* Added information about style customization to README
 
 ## 1.1.4 - 2017-02-12
 * Rerelease changes made for v1.1.2 but scoped to Atom v1.14 and greater
@@ -164,7 +165,7 @@
 * Added keywords for finding this package easier in atom's package collection
 
 ## 0.3.2 - 2015-09-23
-* Updated README with demonstration gif
+* Updated README with demo gif
 
 ## 0.3.1 - 2015-09-23
 * Fixed package compile errors

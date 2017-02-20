@@ -32,6 +32,17 @@ You can call any of these commands from your own custom keybinding, simply overr
 * **Left Editor Color** - Specifies the highlight color for the left editor.
 * **Right Editor Color** - Specifies the highlight color for the right editor.
 
+### Customization
+The highlighting for this package uses global UI variables defined in your syntax theme. The variables are `@syntax-color-added`, `@syntax-color-removed`, `@syntax-color-modified`, and `@syntax-gutter-background-color-selected` (for the blank spacers between lines). Make sure your theme defines these, so it is compatible with this package!
+
+To override these colors in your `styles.less`, write selectors for `.split-diff-added`, `.split-diff-removed`, `.split-diff-selected`, and/or `.split-diff-offset`. For instance:
+
+```
+.split-diff-added {
+  background-color: fade(blue, 40%) !important;
+}
+```
+
 ## Minimap Plugin
 
 Get the [Split Diff minimap plugin](https://atom.io/packages/minimap-split-diff) to make it easier to spot differences!
