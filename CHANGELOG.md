@@ -1,3 +1,7 @@
+## 1.2.1 - 2017-03-17
+* Fixed uncaught type error #93 - thanks Greenek!
+* Fixed uncaught reference error #96 - thanks Greenek!
+
 ## 1.2.0 - 2017-02-20
 * Added option to automatically hide Tree View while diffing #82
 * Added information about style customization to README
