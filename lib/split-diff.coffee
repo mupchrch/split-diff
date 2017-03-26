@@ -250,6 +250,8 @@ module.exports = SplitDiff =
 
   # resumes after the compute diff process returns
   _resumeUpdateDiff: (editors, computedDiff) ->
+    return unless @diffView?
+    
     @diffView.clearDiff()
     if @syncScroll?
       @syncScroll.dispose()
