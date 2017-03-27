@@ -162,6 +162,14 @@ module.exports = SplitDiff =
         @disable()
       @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
         @updateDiff(editors)
+      @editorSubscriptions.add editors.editor1.onDidChangeCursorPosition (event) =>
+        @diffView.handleCursorChange(event.cursor, event.oldBufferPosition, event.newBufferPosition)
+      @editorSubscriptions.add editors.editor2.onDidChangeCursorPosition (event) =>
+        @diffView.handleCursorChange(event.cursor, event.oldBufferPosition, event.newBufferPosition)
+      @editorSubscriptions.add editors.editor1.onDidAddCursor (cursor) =>
+        @diffView.handleCursorChange(cursor, -1, cursor.getBufferPosition())
+      @editorSubscriptions.add editors.editor2.onDidAddCursor (cursor) =>
+        @diffView.handleCursorChange(cursor, -1, cursor.getBufferPosition())
 
       # add the bottom UI panel
       if !@footerView?
@@ -251,7 +259,7 @@ module.exports = SplitDiff =
   # resumes after the compute diff process returns
   _resumeUpdateDiff: (editors, computedDiff) ->
     return unless @diffView?
-    
+
     @diffView.clearDiff()
     if @syncScroll?
       @syncScroll.dispose()

@@ -1,3 +1,9 @@
+## 1.3.0 - 2017-03-26
+* Added highlight color on click of a diff chunk to indicate selection
+* Changed warning message when attempting to copy left/right with no selections
+* Fixed uncaught type error #94 - thanks littlebee!
+* Fixed being unable to copy an empty chunk to other editor #95
+
 ## 1.2.1 - 2017-03-17
 * Fixed uncaught type error #93 - thanks Greenek!
 * Fixed uncaught reference error #96 - thanks Greenek!
@@ -13,8 +19,8 @@
 * Fixed error in Atom v1.13 due to MarkerLayer bug (rollback changes) #92
 
 ## 1.1.2 - 2017-02-09
-* Fixed marker deprecation warnings due to an optional property removal in 1.8 #87
 * Added service API for getting marker layers and related metadata
+* Fixed marker deprecation warnings due to an optional property removal in 1.8 #87
 
 ## 1.1.1 - 2017-01-09
 * Fixed styling deprecation warnings due to removal of shadow DOM #86
