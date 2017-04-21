@@ -1,3 +1,6 @@
+## 1.3.1 - 2017-04-21
+* Fixed quick diff adding text editor in panes outside of center work area #104
+
 ## 1.3.0 - 2017-03-26
 * Added highlight color on click of a diff chunk to indicate selection
 * Changed warning message when attempting to copy left/right with no selections

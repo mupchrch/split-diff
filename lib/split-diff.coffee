@@ -293,7 +293,7 @@ module.exports = SplitDiff =
     editor2 = null
 
     # try to find the first two editors
-    panes = atom.workspace.getPanes()
+    panes = atom.workspace.getCenter().getPanes()
     for p in panes
       activeItem = p.getActiveItem()
       if atom.workspace.isTextEditor(activeItem)
@@ -328,11 +328,11 @@ module.exports = SplitDiff =
   # Gets the active editor and opens the specified file to the right of it
   # Returns a Promise which yields a value of {editor1: TextEditor, editor2: TextEditor}
   _getEditorsForDiffWithActive: (filePath) ->
-    activeEditor = atom.workspace.getActiveTextEditor()
+    activeEditor = atom.workspace.getCenter().getActiveTextEditor()
     if activeEditor?
       editor1 = activeEditor
       @wasEditor2Created = true
-      panes = atom.workspace.getPanes()
+      panes = atom.workspace.getCenter().getPanes()
       # get index of pane following active editor pane
       rightPaneIndex = panes.indexOf(atom.workspace.paneForItem(editor1)) + 1
       # pane is created if there is not one to the right of the active editor
