@@ -1,5 +1,5 @@
 ## 1.4.0 - 2017-xx-xx
-* Added option to override diff highlight colors #59
+* Added option to override diff highlight colors #78
 * Added service hook to diff two editors with the ability to override a user's settings without overwriting them (to be used from other packages) #69
 * Added service hook to disable the package
 * Fixed "Hide Tree View" setting blindly opening tree-view regardless of if it was already hidden
