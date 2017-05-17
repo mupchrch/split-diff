@@ -1,4 +1,4 @@
-## 1.4.0 - 2017-xx-xx
+## 1.4.0 - 2017-05-17
 * Added option to override diff highlight colors #78
 * Added service hook to diff two editors with the ability to override a user's settings without overwriting them (to be used from other packages) #69
 * Added service hook to disable the package
