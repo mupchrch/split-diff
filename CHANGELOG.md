@@ -193,6 +193,9 @@
 * Fixed scroll sync misalignment upon initial diff
 * Added ability to ignore whitespace
 
+## 0.2.0 - 2015-09-17
+* Updated package description
+
 ## 0.1.0 - First Release
 * Every feature added
 * Every bug fixed
