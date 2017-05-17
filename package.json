@@ -15,14 +15,6 @@
     "difference",
     "visual"
   ],
-  "activationCommands": {
-    "atom-workspace": [
-      "split-diff:toggle",
-      "split-diff:enable",
-      "split-diff:next-diff",
-      "split-diff:prev-diff"
-    ]
-  },
   "providedServices": {
     "split-diff": {
       "versions": {

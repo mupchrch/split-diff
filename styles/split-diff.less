@@ -152,6 +152,14 @@ atom-text-editor {
   input[type=checkbox]:checked + label:before {
     content: '\f03a';
   }
+  /* disabled when setting overridden */
+  input[type=checkbox]:disabled + label {
+    opacity: 0.5;
+    cursor: default;
+  }
+  input[type=checkbox]:disabled + label:before {
+    cursor: default;
+  }
   /* shared styling for checkbox :before element */
   label:before {
     font-family: 'Octicons Regular';

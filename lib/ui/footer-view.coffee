@@ -1,6 +1,6 @@
 module.exports =
 class FooterView
-  constructor: (isWhitespaceIgnored) ->
+  constructor: (isWhitespaceIgnored, disableIgnoreWhitespace) ->
     # create root UI element
     @element = document.createElement('div')
     @element.classList.add('split-diff-ui')
@@ -108,6 +108,8 @@ class FooterView
     @ignoreWhitespaceValue.id = 'ignore-whitespace-checkbox'
     # set checkbox value to current package ignore whitespace setting
     @ignoreWhitespaceValue.checked = isWhitespaceIgnored
+    # set checkbox to disabled if service is overriding
+    @ignoreWhitespaceValue.disabled = disableIgnoreWhitespace
     # register command to checkbox
     @ignoreWhitespaceValue.addEventListener('change', () ->
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:ignore-whitespace')

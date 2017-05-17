@@ -4,7 +4,7 @@ Diffs text between two split panes. New panes are created if less than two panes
 
 \*\* **Supports diffing recent git changes!** \*\*
 
-![Split Diff in action](https://github.com/mupchrch/split-diff/raw/master/demo.gif)
+![split-diff in action](https://github.com/mupchrch/split-diff/raw/master/demo.gif)
 
 ## Usage
 
@@ -28,21 +28,38 @@ You can call any of these commands from your own custom keybinding, simply overr
 * **Show Word Diff** - Diffs the words between each line when this box is checked.
 * **Ignore Whitespace** - Will not diff whitespace when this box is checked.
 * **Mute Notifications** - Mutes all warning notifications when this box is checked.
+* **Hide Tree View** - Automatically hides the tree-view during diff. Re-shows on disable.
 * **Sync Scrolling** - Syncs the scrolling of the editors.
-* **Left Editor Color** - Specifies the highlight color for the left editor.
-* **Right Editor Color** - Specifies the highlight color for the right editor.
+#### Colors
+* **Added Color Side** - Which editor (left or right) to highlight as added. The opposite editor will be highlighted as removed.
+* **Override Highlight Colors** - Whether to override diff colors derived from the current syntax theme.
+* **Added Custom Color** - The color that will be used when overriding added highlight colors.
+* **Removed Custom Color** - The color that will be used when overriding removed highlight colors.
 
-### Customization
-The highlighting for this package uses global UI variables defined in your syntax theme. The variables are `@syntax-color-added`, `@syntax-color-removed`, `@syntax-color-modified`, and `@syntax-gutter-background-color-selected` (for the blank spacers between lines). Make sure your theme defines these, so it is compatible with this package!
+### Service API
+Packages can consume the split-diff service to do things like enable a diff between two editors.
 
-To override these colors in your `styles.less`, write selectors for `.split-diff-added`, `.split-diff-removed`, `.split-diff-selected`, and/or `.split-diff-offset`. For instance:
+```js
+/**
+ * Getter for the marker layers of each editor being diffed.
+ * @return {Promise} A promise that resolves to an object containing the marker layers.
+ */
+getMarkerLayers();
 
-```
-.split-diff-added {
-  background-color: fade(blue, 40%) !important;
-}
+/**
+ * Enables split-diff between the two given editors.
+ * @param {TextEditor} editor1 - The left editor.
+ * @param {TextEditor} editor2 - The right editor.
+ * @param {object} options - Options to override any package setting.
+ */
+diffEditors(editor1, editor2, options);
+
+/**
+ * Disables split-diff.
+ */
+disable();
 ```
 
 ## Minimap Plugin
 
-Get the [Split Diff minimap plugin](https://atom.io/packages/minimap-split-diff) to make it easier to spot differences!
+Get the [split-diff minimap plugin](https://atom.io/packages/minimap-split-diff) to make it easier to spot differences!

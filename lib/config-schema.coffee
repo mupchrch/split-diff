@@ -30,17 +30,31 @@ module.exports =
     default: 'Vertical + Horizontal'
     enum: ['Vertical + Horizontal', 'Vertical', 'None']
     order: 5
-  leftEditorColor:
-    title: 'Left Editor Color'
-    description: 'Specifies the highlight color for the left editor.'
-    type: 'string'
-    default: 'green'
-    enum: ['green', 'red']
-    order: 6
-  rightEditorColor:
-    title: 'Right Editor Color'
-    description: 'Specifies the highlight color for the right editor.'
-    type: 'string'
-    default: 'red'
-    enum: ['green', 'red']
-    order: 7
+  colors:
+    type: 'object'
+    properties:
+      addedColorSide:
+        title: 'Added Color Side'
+        description: 'The side that the latest version of the file is on. The added color will be applied to this editor and the removed color will be opposite.'
+        type: 'string'
+        default: 'left'
+        enum: ['left', 'right']
+        order: 1
+      overrideThemeColors:
+        title: 'Override Highlight Colors'
+        description: 'Override the line highlight colors (defined by variables in your selected syntax theme) with the colors selected below.'
+        type: 'boolean'
+        default: false
+        order: 2
+      addedColor:
+        title: 'Added Custom Color'
+        description: 'The color that will be used for highlighting added lines when **Override Highlight Colors** is checked.'
+        type: 'color'
+        default: 'green'
+        order: 3
+      removedColor:
+        title: 'Removed Custom Color'
+        description: 'The color that will be used for highlighting removed lines when **Override Highlight Colors** is checked.'
+        type: 'color'
+        default: 'red'
+        order: 4
