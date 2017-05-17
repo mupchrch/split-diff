@@ -3,6 +3,7 @@ DiffView = require './diff-view'
 LoadingView = require './ui/loading-view'
 FooterView = require './ui/footer-view'
 SyncScroll = require './sync-scroll'
+StyleCalculator = require './style-calculator'
 configSchema = require './config-schema'
 path = require 'path'
 
@@ -15,10 +16,41 @@ module.exports = SplitDiff =
   wasEditor1Created: false
   wasEditor2Created: false
   hasGitRepo: false
+  wasTreeViewOpen: false
   process: null
+  splitDiffResolves: []
+  options: {}
 
   activate: (state) ->
-    window.splitDiffResolves = []
+    @contextForService = this
+
+    styleCalculator = new StyleCalculator(atom.styles, atom.config)
+    styleCalculator.startWatching(
+        'split-diff-custom-styles',
+        ['split-diff.colors.addedColor', 'split-diff.colors.removedColor'],
+        (config) ->
+          addedColor = config.get('split-diff.colors.addedColor')
+          addedColor.alpha = 0.4
+          addedWordColor = addedColor
+          addedWordColor.alpha = 0.5
+          removedColor = config.get('split-diff.colors.removedColor')
+          removedColor.alpha = 0.4
+          removedWordColor = removedColor
+          removedWordColor.alpha = 0.5
+          "\n
+          .split-diff-added-custom {\n
+            \tbackground-color: #{addedColor.toRGBAString()};\n
+          }\n
+          .split-diff-removed-custom {\n
+            \tbackground-color: #{removedColor.toRGBAString()};\n
+          }\n
+          .split-diff-word-added-custom .region {\n
+            \tbackground-color: #{addedWordColor.toRGBAString()};\n
+          }\n
+          .split-diff-word-removed-custom .region {\n
+            \tbackground-color: #{removedWordColor.toRGBAString()};\n
+          }\n"
+    )
 
     @subscriptions = new CompositeDisposable()
     @subscriptions.add atom.commands.add 'atom-workspace, .tree-view .selected, .tab.texteditor',
@@ -87,21 +119,24 @@ module.exports = SplitDiff =
       @syncScroll.dispose()
       @syncScroll = null
 
+    # auto hide tree view while diffing #82
+    hideTreeView = @options.hideTreeView ? @_getConfig('hideTreeView')
+    if hideTreeView && @wasTreeViewOpen
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'tree-view:show')
+
     # reset all variables
     @wasEditor1Created = false
     @wasEditor2Created = false
     @hasGitRepo = false
-
-    # auto hide tree view while diffing #82
-    if @_getConfig('hideTreeView')
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'tree-view:show')
+    @wasTreeViewOpen = false
 
   # called by "toggle ignore whitespace" command
-  # toggles ignoring whitespace and refreshes the diff
   toggleIgnoreWhitespace: ->
-    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
-    @_setConfig('ignoreWhitespace', !isWhitespaceIgnored)
-    @footerView?.setIgnoreWhitespace(!isWhitespaceIgnored)
+    # if ignoreWhitespace is not being overridden
+    if !(@options.ignoreWhitespace?)
+      ignoreWhitespace = @_getConfig('ignoreWhitespace')
+      @_setConfig('ignoreWhitespace', !ignoreWhitespace)
+      @footerView?.setIgnoreWhitespace(!ignoreWhitespace)
 
   # called by "Move to next diff" command
   nextDiff: ->
@@ -130,20 +165,24 @@ module.exports = SplitDiff =
   # called by the commands enable/toggle to do initial diff
   # sets up subscriptions for auto diff and disabling when a pane is destroyed
   # event is an optional argument of a file path to diff with current
-  diffPanes: (event) ->
+  # editorsPromise is an optional argument of a promise that returns with 2 editors
+  # options is an optional argument with optional properties that are used to override user's settings
+  diffPanes: (event, editorsPromise, options = {}) ->
+    @options = options
     # in case enable was called again
     @disable()
 
     @editorSubscriptions = new CompositeDisposable()
 
-    if event?.currentTarget.classList.contains('tab')
-      filePath = event.currentTarget.path
-      editorsPromise = @_getEditorsForDiffWithActive(filePath)
-    else if event?.currentTarget.classList.contains('list-item') && event?.currentTarget.classList.contains('file')
-      filePath = event.currentTarget.getPath()
-      editorsPromise = @_getEditorsForDiffWithActive(filePath)
-    else
-      editorsPromise = @_getEditorsForQuickDiff()
+    if !editorsPromise
+      if event?.currentTarget.classList.contains('tab')
+        filePath = event.currentTarget.path
+        editorsPromise = @_getEditorsForDiffWithActive(filePath)
+      else if event?.currentTarget.classList.contains('list-item') && event?.currentTarget.classList.contains('file')
+        filePath = event.currentTarget.getPath()
+        editorsPromise = @_getEditorsForDiffWithActive(filePath)
+      else
+        editorsPromise = @_getEditorsForQuickDiff()
 
     editorsPromise.then ((editors) ->
       if editors == null
@@ -173,7 +212,8 @@ module.exports = SplitDiff =
 
       # add the bottom UI panel
       if !@footerView?
-        @footerView = new FooterView(@_getConfig('ignoreWhitespace'))
+        ignoreWhitespace = @options.ignoreWhitespace ? @_getConfig('ignoreWhitespace')
+        @footerView = new FooterView(ignoreWhitespace, (@options.ignoreWhitespace?))
         @footerView.createPanel()
       @footerView.show()
 
@@ -209,14 +249,16 @@ module.exports = SplitDiff =
           ]
         }]
       }
-      ).bind(this) # make sure the scope is correct
+    ).bind(this) # make sure the scope is correct
 
   # called by both diffPanes and the editor subscription to update the diff
   updateDiff: (editors) ->
     @isEnabled = true
 
     # auto hide tree view while diffing #82
-    if @_getConfig('hideTreeView') && document.querySelector('.tree-view')
+    hideTreeView = @options.hideTreeView ? @_getConfig('hideTreeView')
+    if document.querySelector('.tree-view') && hideTreeView
+      @wasTreeViewOpen = true
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'tree-view:toggle')
 
     # if there is a diff being computed in the background, cancel it
@@ -224,7 +266,7 @@ module.exports = SplitDiff =
       @process.kill()
       @process = null
 
-    isWhitespaceIgnored = @_getConfig('ignoreWhitespace')
+    ignoreWhitespace = @options.ignoreWhitespace ? @_getConfig('ignoreWhitespace')
     editorPaths = @_createTempFiles(editors)
 
     # create the loading view if it doesn't exist yet
@@ -236,7 +278,7 @@ module.exports = SplitDiff =
     # --- kick off background process to compute diff ---
     {BufferedNodeProcess} = require 'atom'
     command = path.resolve __dirname, "./compute-diff.js"
-    args = [editorPaths.editor1Path, editorPaths.editor2Path, isWhitespaceIgnored]
+    args = [editorPaths.editor1Path, editorPaths.editor2Path, ignoreWhitespace]
     theOutput = ''
     stdout = (output) =>
       theOutput = output
@@ -265,20 +307,21 @@ module.exports = SplitDiff =
       @syncScroll.dispose()
       @syncScroll = null
 
-    leftHighlightType = 'added'
-    rightHighlightType = 'removed'
-    if @_getConfig('leftEditorColor') == 'red'
-      leftHighlightType = 'removed'
-    if @_getConfig('rightEditorColor') == 'green'
-      rightHighlightType = 'added'
-    @diffView.displayDiff(computedDiff, leftHighlightType, rightHighlightType, @_getConfig('diffWords'), @_getConfig('ignoreWhitespace'))
+    # grab the settings for the diff
+    addedColorSide = @options.addedColorSide ? @_getConfig('colors.addedColorSide')
+    diffWords = @options.diffWords ? @_getConfig('diffWords')
+    ignoreWhitespace = @options.ignoreWhitespace ? @_getConfig('ignoreWhitespace')
+    overrideThemeColors = @options.overrideThemeColors ? @_getConfig('colors.overrideThemeColors')
 
-    while window.splitDiffResolves?.length
-      window.splitDiffResolves.pop()(@diffView.getMarkerLayers())
+    @diffView.displayDiff(computedDiff, addedColorSide, diffWords, ignoreWhitespace, overrideThemeColors)
+
+    # give the marker layers to those registered with the service
+    while @splitDiffResolves?.length
+      @splitDiffResolves.pop()(@diffView.getMarkerLayers())
 
     @footerView?.setNumDifferences(@diffView.getNumDifferences())
 
-    scrollSyncType = @_getConfig('scrollSyncType')
+    scrollSyncType = @options.scrollSyncType ? @_getConfig('scrollSyncType')
     if scrollSyncType == 'Vertical + Horizontal'
       @syncScroll = new SyncScroll(editors.editor1, editors.editor2, true)
       @syncScroll.syncPositions()
@@ -370,15 +413,15 @@ module.exports = SplitDiff =
     editor1.unfoldAll()
     editor2.unfoldAll()
 
-    shouldNotify = !@_getConfig('muteNotifications')
+    muteNotifications = @options.muteNotifications ? @_getConfig('muteNotifications')
     softWrapMsg = 'Warning: Soft wrap enabled! (Line diffs may not align)'
-    if editor1.isSoftWrapped() && shouldNotify
+    if editor1.isSoftWrapped() && !muteNotifications
       atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
-    else if editor2.isSoftWrapped() && shouldNotify
+    else if editor2.isSoftWrapped() && !muteNotifications
       atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
 
     buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()
-    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding) && editor1.getLineCount() != 1 && editor2.getLineCount() != 1 && shouldNotify
+    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding) && editor1.getLineCount() != 1 && editor2.getLineCount() != 1 && !muteNotifications
       # pop warning if the line endings differ and we haven't done anything about it
       lineEndingMsg = 'Warning: Line endings differ!'
       atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
@@ -429,8 +472,14 @@ module.exports = SplitDiff =
 
   # --- SERVICE API ---
   getMarkerLayers: () ->
-    new Promise (resolve, reject) ->
-      window.splitDiffResolves.push(resolve)
+    new Promise ((resolve, reject) ->
+      @splitDiffResolves.push(resolve)
+    ).bind(this)
+
+  diffEditors: (editor1, editor2, options) ->
+    @diffPanes(null, Promise.resolve({editor1: editor1, editor2: editor2}), options)
 
   provideSplitDiff: ->
-    getMarkerLayers: @getMarkerLayers
+    getMarkerLayers: @getMarkerLayers.bind(@contextForService)
+    diffEditors: @diffEditors.bind(@contextForService)
+    disable: @disable.bind(@contextForService)
