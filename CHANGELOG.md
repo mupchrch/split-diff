@@ -1,3 +1,6 @@
+## 1.4.1 - 2017-06-11
+* Fixed ctrl-alt-t keybinding conflict in Linux with terminal shortcut (changed to ctrl-alt-d) #98
+
 ## 1.4.0 - 2017-05-17
 * Added option to override diff highlight colors #78
 * Added service hook to diff two editors with the ability to override a user's settings without overwriting them (to be used from other packages) #69
