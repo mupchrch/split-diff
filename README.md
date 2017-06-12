@@ -14,7 +14,7 @@ You can call any of these commands from your own custom keybinding, simply overr
 
 | Command | Effect | Default Keymaps |
 | ------- | ------ | --------------- |
-| Toggle `split-diff:toggle` | Toggles a diff of the text between two side-by-side panes. Creates panes as necessary. Displays git changes if there is a repository found. | `ctrl-alt-d`) |
+| Toggle `split-diff:toggle` | Toggles a diff of the text between two side-by-side panes. Creates panes as necessary. Displays git changes if there is a repository found. | `ctrl-alt-d` |
 | Enable `split-diff:enable` | Enables a diff of the text between two side-by-side panes. Creates panes as necessary. Displays git changes if there is a repository found. | ... |
 | Disable `split-diff:disable` | Disables a diff. Removes any panes that were created by this package. | ... |
 | Ignore Whitespace `split-diff:ignore-whitespace` | Toggles the Ignore Whitespace setting. | ... |
