@@ -175,12 +175,16 @@ module.exports = SplitDiff =
     @editorSubscriptions = new CompositeDisposable()
 
     if !editorsPromise
-      if event?.currentTarget.classList.contains('tab')
-        filePath = event.currentTarget.path
-        editorsPromise = @_getEditorsForDiffWithActive(filePath)
-      else if event?.currentTarget.classList.contains('list-item') && event?.currentTarget.classList.contains('file')
-        filePath = event.currentTarget.getPath()
-        editorsPromise = @_getEditorsForDiffWithActive(filePath)
+      if event?.currentTarget.classList.contains('tab') || event?.currentTarget.classList.contains('file')
+        elemWithPath = event.currentTarget.querySelector('[data-path]')
+        params = {}
+
+        if elemWithPath
+          params.path = elemWithPath.dataset.path
+        else if event.currentTarget.item
+          params.editor = event.currentTarget.item
+
+        editorsPromise = @_getEditorsForDiffWithActive(params)
       else
         editorsPromise = @_getEditorsForQuickDiff()
 
@@ -370,8 +374,11 @@ module.exports = SplitDiff =
 
   # Gets the active editor and opens the specified file to the right of it
   # Returns a Promise which yields a value of {editor1: TextEditor, editor2: TextEditor}
-  _getEditorsForDiffWithActive: (filePath) ->
+  _getEditorsForDiffWithActive: (params) ->
+    filePath = params.path
+    editorWithoutPath = params.editor
     activeEditor = atom.workspace.getCenter().getActiveTextEditor()
+
     if activeEditor?
       editor1 = activeEditor
       @wasEditor2Created = true
@@ -380,14 +387,22 @@ module.exports = SplitDiff =
       rightPaneIndex = panes.indexOf(atom.workspace.paneForItem(editor1)) + 1
       # pane is created if there is not one to the right of the active editor
       rightPane = panes[rightPaneIndex] || atom.workspace.paneForItem(editor1).splitRight()
-      if editor1.getPath() == filePath
-        # if diffing with itself, set filePath to null so an empty editor is
-        # opened, which will cause a git diff
-        filePath = null
-      editor2Promise = atom.workspace.openURIInPane(filePath, rightPane)
 
-      return editor2Promise.then (editor2) ->
-        return {editor1: editor1, editor2: editor2}
+      if params.path
+        filePath = params.path
+        if editor1.getPath() == filePath
+          # if diffing with itself, set filePath to null so an empty editor is
+          # opened, which will cause a git diff
+          filePath = null
+        editor2Promise = atom.workspace.openURIInPane(filePath, rightPane)
+
+        return editor2Promise.then (editor2) ->
+          return {editor1: editor1, editor2: editor2}
+      else if editorWithoutPath
+        editor2 = editorWithoutPath.copy()
+        rightPane.addItem(editor2)
+
+        return Promise.resolve({editor1: editor1, editor2: editor2})
     else
       noActiveEditorMsg = 'No active file found! (Try focusing a text editor)'
       atom.notifications.addWarning('Split Diff', {detail: noActiveEditorMsg, dismissable: false, icon: 'diff'})

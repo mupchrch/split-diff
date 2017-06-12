@@ -1,5 +1,7 @@
 ## 1.4.1 - 2017-06-11
 * Fixed ctrl-alt-t keybinding conflict in Linux with terminal shortcut (changed to ctrl-alt-d) #98
+* Fixed uncaught type error for "Diff With Active File" when using Nuclide package #85
+* Fixed error for "Diff With Active File" when selected for a tab not saved on disk
 
 ## 1.4.0 - 2017-05-17
 * Added option to override diff highlight colors #78
