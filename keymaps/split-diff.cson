@@ -1,10 +1,16 @@
 'atom-workspace':
   'ctrl-alt-n': 'split-diff:next-diff'
   'ctrl-alt-p': 'split-diff:prev-diff'
-  'ctrl-alt-d': 'split-diff:toggle'
 '.split-diff':
   'ctrl-alt-,': 'split-diff:copy-to-left'
   'ctrl-alt-.': 'split-diff:copy-to-right'
 '.split-diff-ui':
   'ctrl-alt-,': 'split-diff:copy-to-left'
   'ctrl-alt-.': 'split-diff:copy-to-right'
+
+'.platform-darwin atom-workspace':
+  'ctrl-alt-t': 'split-diff:toggle'
+'.platform-win32 atom-workspace':
+  'ctrl-alt-t': 'split-diff:toggle'
+'.platform-linux atom-workspace':
+  'ctrl-alt-d': 'split-diff:toggle'
