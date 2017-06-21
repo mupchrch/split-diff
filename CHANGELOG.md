@@ -1,3 +1,6 @@
+## 1.4.2 - 2017-06-21
+* Changed toggle keybinding back to ctrl-alt-t for windows and mac #117 - thanks ooJerryLeeoo!
+
 ## 1.4.1 - 2017-06-11
 * Fixed ctrl-alt-t keybinding conflict in Linux with terminal shortcut (changed to ctrl-alt-d) #98
 * Fixed uncaught type error for "Diff With Active File" when using Nuclide package #85
