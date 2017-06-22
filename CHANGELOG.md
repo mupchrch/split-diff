@@ -1,3 +1,7 @@
+## 1.4.3 - 2017-06-22
+* Fixed issue scrolling and splitting panes in Atom v1.19.0-beta1 #120
+* Fixed deprecation warning when turning on the package #102
+
 ## 1.4.2 - 2017-06-21
 * Changed toggle keybinding back to ctrl-alt-t for windows and mac #117 - thanks ooJerryLeeoo!
 
