@@ -352,13 +352,13 @@ module.exports = SplitDiff =
 
     # auto open editor panes so we have two to diff with
     if editor1 == null
-      editor1 = atom.workspace.buildTextEditor()
+      editor1 = atom.workspace.buildTextEditor({autoHeight: false})
       @wasEditor1Created = true
       # add first editor to the first pane
       panes[0].addItem(editor1)
       panes[0].activateItem(editor1)
     if editor2 == null
-      editor2 = atom.workspace.buildTextEditor()
+      editor2 = atom.workspace.buildTextEditor({autoHeight: false})
       @wasEditor2Created = true
       editor2.setGrammar(editor1.getGrammar())
       rightPaneIndex = panes.indexOf(atom.workspace.paneForItem(editor1)) + 1
