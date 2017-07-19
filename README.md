@@ -1,4 +1,4 @@
-# split-diff package
+# split-diff [![Installs!](https://img.shields.io/apm/dm/split-diff.svg?style=flat-square)](https://atom.io/packages/split-diff) [![Version!](https://img.shields.io/apm/v/split-diff.svg?style=flat-square)](https://atom.io/packages/split-diff) [![License](https://img.shields.io/apm/l/split-diff.svg?style=flat-square)](https://github.com/mupchrch/split-diff/blob/master/LICENSE.md)
 
 Diffs text between two split panes. New panes are created if less than two panes exist upon run of the package.
 
