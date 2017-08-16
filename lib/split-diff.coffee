@@ -17,6 +17,7 @@ module.exports = SplitDiff =
   wasEditor2Created: false
   hasGitRepo: false
   wasTreeViewOpen: false
+  docksToReopen: {left: false, right: false, bottom: false}
   process: null
   splitDiffResolves: []
   options: {}
@@ -120,11 +121,17 @@ module.exports = SplitDiff =
       @syncScroll = null
 
     # auto hide tree view while diffing #82
-    hideTreeView = @options.hideTreeView ? @_getConfig('hideTreeView')
-    if hideTreeView && @wasTreeViewOpen
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'tree-view:show')
+    hideDocks = @options.hideDocks ? @_getConfig('hideDocks')
+    if hideDocks
+      if @docksToReopen.left
+        atom.workspace.getLeftDock().show()
+      if @docksToReopen.right
+        atom.workspace.getRightDock().show()
+      if @docksToReopen.bottom
+        atom.workspace.getBottomDock().show()
 
     # reset all variables
+    @docksToReopen = {left: false, right: false, bottom: false}
     @wasEditor1Created = false
     @wasEditor2Created = false
     @hasGitRepo = false
@@ -221,6 +228,16 @@ module.exports = SplitDiff =
         @footerView.createPanel()
       @footerView.show()
 
+      # auto hide tree view while diffing #82
+      hideDocks = @options.hideDocks ? @_getConfig('hideDocks')
+      if hideDocks
+        @docksToReopen.left = atom.workspace.getLeftDock().isVisible()
+        @docksToReopen.right = atom.workspace.getRightDock().isVisible()
+        @docksToReopen.bottom = atom.workspace.getBottomDock().isVisible()
+        atom.workspace.getLeftDock().hide()
+        atom.workspace.getRightDock().hide()
+        atom.workspace.getBottomDock().hide()
+
       # update diff if there is no git repo (no onchange fired)
       if !@hasGitRepo
         @updateDiff(editors)
@@ -258,12 +275,6 @@ module.exports = SplitDiff =
   # called by both diffPanes and the editor subscription to update the diff
   updateDiff: (editors) ->
     @isEnabled = true
-
-    # auto hide tree view while diffing #82
-    hideTreeView = @options.hideTreeView ? @_getConfig('hideTreeView')
-    if document.querySelector('.tree-view') && hideTreeView
-      @wasTreeViewOpen = true
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'tree-view:toggle')
 
     # if there is a diff being computed in the background, cancel it
     if @process?

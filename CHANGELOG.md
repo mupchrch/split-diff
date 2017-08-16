@@ -1,3 +1,6 @@
+## 1.4.4 - 2017-08-16
+* Changed "Hide Tree View" setting to "Hide Docks" which fixes tree view re-showing while typing issue #125
+
 ## 1.4.3 - 2017-06-22
 * Fixed issue scrolling and splitting panes in Atom v1.19.0-beta1 #120
 * Fixed deprecation warning when turning on the package #102

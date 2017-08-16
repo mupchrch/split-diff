@@ -17,9 +17,9 @@ module.exports =
     type: 'boolean'
     default: false
     order: 3
-  hideTreeView:
-    title: 'Hide Tree View'
-    description: 'Hides Tree View during diff - shows when finished.'
+  hideDocks:
+    title: 'Hide Docks'
+    description: 'Hides all docks (Tree View, Github, etc) during diff - shows when finished.'
     type: 'boolean'
     default: false
     order: 4
