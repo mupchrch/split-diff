@@ -1,4 +1,8 @@
 ## 1.4.4 - 2017-08-16
+* Fixed error when choosing "Diff with Active File" on an editor tab created by this package #125
+* Fixed next/prev selection number showing "1 / 0" when clicking next with zero differences
+
+## 1.4.4 - 2017-08-16
 * Changed "Hide Tree View" setting to "Hide Docks" which fixes tree view re-showing while typing issue #125
 
 ## 1.4.3 - 2017-06-22

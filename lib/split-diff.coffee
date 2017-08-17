@@ -176,10 +176,6 @@ module.exports = SplitDiff =
   # options is an optional argument with optional properties that are used to override user's settings
   diffPanes: (event, editorsPromise, options = {}) ->
     @options = options
-    # in case enable was called again
-    @disable()
-
-    @editorSubscriptions = new CompositeDisposable()
 
     if !editorsPromise
       if event?.currentTarget.classList.contains('tab') || event?.currentTarget.classList.contains('file')
@@ -189,15 +185,20 @@ module.exports = SplitDiff =
         if elemWithPath
           params.path = elemWithPath.dataset.path
         else if event.currentTarget.item
-          params.editor = event.currentTarget.item
+          params.editor = event.currentTarget.item.copy() # copy here so still have it if disable closes it #124
 
+        @disable() # make sure we're in a good starting state
         editorsPromise = @_getEditorsForDiffWithActive(params)
       else
+        @disable() # make sure we're in a good starting state
         editorsPromise = @_getEditorsForQuickDiff()
+    else
+      @disable() # make sure we're in a good starting state
 
     editorsPromise.then ((editors) ->
       if editors == null
         return
+      @editorSubscriptions = new CompositeDisposable()
       @_setupVisibleEditors(editors.editor1, editors.editor2)
       @diffView = new DiffView(editors)
 
