@@ -58,13 +58,44 @@ atom-text-editor {
   display: inline-block;
 }
 
+@spinner-duration: 1.2s;
+@spinner-color: mix( hsv( 220, 100%, 66%), hsl( 220, 100%, 70%), luma( hsl(220, 50%, 50%) ) );
 .split-diff-icon {
-  background-image: url('images/octocat-spinner-128.gif');
-  background-repeat: no-repeat;
-  background-size: contain;
-  width: 40px;
-  height: 40px;
+  position: relative;
   display: inline-block;
+  width: 1em;
+  height: 1em;
+  font-size: 48px;
+  background: radial-gradient(@spinner-color .1em, transparent .11em);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 10; // prevent sibling elements from getting their own layers
+    top: 0;
+    left: 0;
+    border-radius: 1em;
+    width: inherit;
+    height: inherit;
+    border-radius: 1em;
+    border: 2px solid;
+    -webkit-animation: spinner-animation @spinner-duration infinite;
+    -webkit-animation-fill-mode: backwards;
+  }
+  &::before {
+    border-color: @spinner-color transparent transparent transparent;
+  }
+  &::after {
+    border-color: transparent lighten(@spinner-color, 15%) transparent transparent;
+    -webkit-animation-delay: @spinner-duration/2;
+  }
+}
+
+@-webkit-keyframes spinner-animation {
+    0% { transform: rotateZ(  0deg); -webkit-animation-timing-function: cubic-bezier(0, 0, .8, .2); }
+   50% { transform: rotateZ(180deg); -webkit-animation-timing-function: cubic-bezier(.2, .8, 1, 1); }
+  100% { transform: rotateZ(360deg); }
 }
 
 .split-diff-hide-mask:after {
