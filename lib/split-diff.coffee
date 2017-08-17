@@ -460,9 +460,10 @@ module.exports = SplitDiff =
       for directory, i in atom.project.getDirectories()
         if editor1Path is directory.getPath() or directory.contains(editor1Path)
           projectRepo = atom.project.getRepositories()[i]
-          if projectRepo? && projectRepo.repo?
+          if projectRepo?
+            projectRepo = projectRepo.getRepo(editor1Path) # fix repo for submodules #112
             relativeEditor1Path = projectRepo.relativize(editor1Path)
-            gitHeadText = projectRepo.repo.getHeadBlob(relativeEditor1Path)
+            gitHeadText = projectRepo.getHeadBlob(relativeEditor1Path)
             if gitHeadText?
               editor2.selectAll()
               editor2.insertText(gitHeadText)

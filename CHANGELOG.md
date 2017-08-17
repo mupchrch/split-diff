@@ -1,4 +1,5 @@
-## 1.4.4 - 2017-08-16
+## 1.4.5 - 2017-08-17
+* Added git submodule support #112
 * Changed octocat loading icon to be a more generic (full CSS) loading spinner #126
 * Fixed error when choosing "Diff with Active File" on an editor tab created by this package #125
 * Fixed next/prev selection number showing "1 / 0" when clicking next with zero differences
