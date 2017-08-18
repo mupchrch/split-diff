@@ -1,4 +1,4 @@
-## 1.4.5 - 2017-08-17
+## 1.5.0 - 2017-08-17
 * Added setting to automatically turn off soft wrap during diff and restore it on disable #101
 * Added git submodule support #112
 * Changed octocat loading icon to be a more generic (full CSS) loading spinner #126
@@ -41,7 +41,6 @@
 
 ## 1.2.0 - 2017-02-20
 * Added option to automatically hide Tree View while diffing #82
-* Added information about style customization to README
 
 ## 1.1.4 - 2017-02-12
 * Rerelease changes made for v1.1.2 but scoped to Atom v1.14 and greater
