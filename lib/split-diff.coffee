@@ -15,8 +15,9 @@ module.exports = SplitDiff =
   isEnabled: false
   wasEditor1Created: false
   wasEditor2Created: false
+  wasEditor1SoftWrapped: false
+  wasEditor2SoftWrapped: false
   hasGitRepo: false
-  wasTreeViewOpen: false
   docksToReopen: {left: false, right: false, bottom: false}
   process: null
   splitDiffResolves: []
@@ -103,8 +104,12 @@ module.exports = SplitDiff =
     if @diffView?
       if @wasEditor1Created
         @diffView.cleanUpEditor(1)
+      else if @wasEditor1SoftWrapped
+        @diffView.restoreEditorSoftWrap(1)
       if @wasEditor2Created
         @diffView.cleanUpEditor(2)
+      else if @wasEditor2SoftWrapped
+        @diffView.restoreEditorSoftWrap(2)
       @diffView.destroy()
       @diffView = null
 
@@ -134,8 +139,9 @@ module.exports = SplitDiff =
     @docksToReopen = {left: false, right: false, bottom: false}
     @wasEditor1Created = false
     @wasEditor2Created = false
+    @wasEditor1SoftWrapped = false
+    @wasEditor2SoftWrapped = false
     @hasGitRepo = false
-    @wasTreeViewOpen = false
 
   # called by "toggle ignore whitespace" command
   toggleIgnoreWhitespace: ->
@@ -441,10 +447,22 @@ module.exports = SplitDiff =
     editor2.unfoldAll()
 
     muteNotifications = @options.muteNotifications ? @_getConfig('muteNotifications')
-    softWrapMsg = 'Warning: Soft wrap enabled! (Line diffs may not align)'
-    if editor1.isSoftWrapped() && !muteNotifications
-      atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
-    else if editor2.isSoftWrapped() && !muteNotifications
+    turnOffSoftWrap = @options.turnOffSoftWrap ? @_getConfig('turnOffSoftWrap')
+    if turnOffSoftWrap
+      shouldNotify = false
+      if editor1.isSoftWrapped()
+        @wasEditor1SoftWrapped = true
+        editor1.setSoftWrapped(false)
+        shouldNotify = true
+      if editor2.isSoftWrapped()
+        @wasEditor2SoftWrapped = true
+        editor2.setSoftWrapped(false)
+        shouldNotify = true
+      if shouldNotify && !muteNotifications
+        softWrapMsg = 'Soft wrap automatically disabled so lines remain in sync.'
+        atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
+    else if !muteNotifications && (editor1.isSoftWrapped() || editor2.isSoftWrapped())
+      softWrapMsg = 'Warning: Soft wrap enabled! Lines may not align.\n(Try "Turn Off Soft Wrap" setting)'
       atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
 
     buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()

@@ -28,6 +28,7 @@ You can call any of these commands from your own custom keybinding, simply overr
 * **Show Word Diff** - Diffs the words between each line when this box is checked.
 * **Ignore Whitespace** - Will not diff whitespace when this box is checked.
 * **Mute Notifications** - Mutes all warning notifications when this box is checked.
+* **Turn Off Soft Wrap** - Automatically turns off soft wrap during diff. Restores on disable.
 * **Hide Docks** - Automatically hides all docks during diff (Tree View, Github, etc). Re-shows on disable.
 * **Sync Scrolling** - Syncs the scrolling of the editors.
 #### Colors

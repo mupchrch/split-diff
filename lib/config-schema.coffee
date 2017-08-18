@@ -11,25 +11,31 @@ module.exports =
     type: 'boolean'
     default: false
     order: 2
+  turnOffSoftWrap:
+    title: 'Turn Off Soft Wrap'
+    description: 'Turns off soft wrap during diff - restores when finished.'
+    type: 'boolean'
+    default: false
+    order: 3
   muteNotifications:
     title: 'Mute Notifications'
     description: 'Mutes all warning notifications when this box is checked.'
     type: 'boolean'
     default: false
-    order: 3
+    order: 4
   hideDocks:
     title: 'Hide Docks'
     description: 'Hides all docks (Tree View, Github, etc) during diff - shows when finished.'
     type: 'boolean'
     default: false
-    order: 4
+    order: 5
   scrollSyncType:
     title: 'Sync Scrolling'
     description: 'Syncs the scrolling of the editors.'
     type: 'string'
     default: 'Vertical + Horizontal'
     enum: ['Vertical + Horizontal', 'Vertical', 'None']
-    order: 5
+    order: 6
   colors:
     type: 'object'
     properties:

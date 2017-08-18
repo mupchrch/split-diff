@@ -1,4 +1,5 @@
 ## 1.4.5 - 2017-08-17
+* Added setting to automatically turn off soft wrap during diff and restore it on disable #101
 * Added git submodule support #112
 * Changed octocat loading icon to be a more generic (full CSS) loading spinner #126
 * Fixed error when choosing "Diff with Active File" on an editor tab created by this package #125
