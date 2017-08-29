@@ -4,16 +4,18 @@
 atom-text-editor {
   .gutter .line-number,
   .line {
-    &.split-diff-added {
-      background-color: fade(@syntax-color-added, 40%);
-    }
+    &.split-diff-line {
+      &.split-diff-added {
+        background-color: fade(@syntax-color-added, 40%);
+      }
 
-    &.split-diff-removed {
-      background-color: fade(@syntax-color-removed, 40%);
-    }
+      &.split-diff-removed {
+        background-color: fade(@syntax-color-removed, 40%);
+      }
 
-    &.split-diff-selected {
-      background-color: fade(@syntax-color-modified, 40%);
+      &.split-diff-selected {
+        background-color: fade(@syntax-color-modified, 40%);
+      }
     }
   }
 
