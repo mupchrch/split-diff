@@ -1,3 +1,6 @@
+## 1.5.1 - 2017-08-29
+* Fixed selected line losing its background color with some themes - thanks skylerlee!
+
 ## 1.5.0 - 2017-08-17
 * Added setting to automatically turn off soft wrap during diff and restore it on disable #101
 * Added git submodule support #112
