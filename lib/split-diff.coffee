@@ -154,13 +154,21 @@ module.exports = SplitDiff =
   # called by "Move to next diff" command
   nextDiff: ->
     if @diffView?
-      selectedIndex = @diffView.nextDiff()
+      isSyncScrollEnabled = false
+      scrollSyncType = @options.scrollSyncType ? @_getConfig('scrollSyncType')
+      if scrollSyncType == 'Vertical + Horizontal' || scrollSyncType == 'Vertical'
+        isSyncScrollEnabled = true
+      selectedIndex = @diffView.nextDiff(isSyncScrollEnabled)
       @footerView?.showSelectionCount( selectedIndex + 1 )
 
   # called by "Move to previous diff" command
   prevDiff: ->
     if @diffView?
-      selectedIndex = @diffView.prevDiff()
+      isSyncScrollEnabled = false
+      scrollSyncType = @options.scrollSyncType ? @_getConfig('scrollSyncType')
+      if scrollSyncType == 'Vertical + Horizontal' || scrollSyncType == 'Vertical'
+        isSyncScrollEnabled = true
+      selectedIndex = @diffView.prevDiff(isSyncScrollEnabled)
       @footerView?.showSelectionCount( selectedIndex + 1 )
 
   # called by "Copy to right" command

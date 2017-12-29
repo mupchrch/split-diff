@@ -1,3 +1,6 @@
+## 1.5.2 - 2017-12-29
+* Fixed infinite scroll loop when performing a next/prev diff command #136
+
 ## 1.5.1 - 2017-08-29
 * Fixed selected line losing its background color with some themes - thanks skylerlee!
 

@@ -25,7 +25,7 @@
   "repository": "https://github.com/mupchrch/split-diff",
   "license": "MIT",
   "engines": {
-    "atom": ">= 1.17 < 2.0.0"
+    "atom": ">= 1.19 < 2.0.0"
   },
   "dependencies": {
     "diff": "latest"
