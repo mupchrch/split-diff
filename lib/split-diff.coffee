@@ -386,7 +386,6 @@ module.exports = SplitDiff =
     if editor2 == null
       editor2 = atom.workspace.buildTextEditor({autoHeight: false})
       @wasEditor2Created = true
-      editor2.setGrammar(editor1.getGrammar())
       rightPaneIndex = panes.indexOf(atom.workspace.paneForItem(editor1)) + 1
       if panes[rightPaneIndex]
         # add second editor to existing pane to the right of first editor
@@ -395,6 +394,7 @@ module.exports = SplitDiff =
       else
         # no existing pane so split right
         atom.workspace.paneForItem(editor1).splitRight({items: [editor2]})
+      editor2.getBuffer().setLanguageMode(editor1.getBuffer().getLanguageMode())
 
     return Promise.resolve({editor1: editor1, editor2: editor2})
 

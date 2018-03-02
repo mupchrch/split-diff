@@ -1,3 +1,6 @@
+## 1.5.3 - 2018-03-02
+* Fixed syntax highlighting not working for automatically opened editors #141
+
 ## 1.5.2 - 2017-12-29
 * Fixed infinite scroll loop when performing a next/prev diff command #136
 
