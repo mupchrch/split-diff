@@ -1,4 +1,4 @@
-## 1.5.3 - 2018-03-02
+## 1.5.3 - 2018-10-10
 * Fixed syntax highlighting not working for automatically opened editors #141
 
 ## 1.5.2 - 2017-12-29
