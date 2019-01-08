@@ -394,7 +394,7 @@ module.exports = SplitDiff =
       else
         # no existing pane so split right
         atom.workspace.paneForItem(editor1).splitRight({items: [editor2]})
-      editor2.getBuffer().setLanguageMode(editor1.getBuffer().getLanguageMode())
+      editor2.getBuffer().setLanguageMode(atom.grammars.languageModeForGrammarAndBuffer(editor1.getGrammar(), editor2.getBuffer()))
 
     return Promise.resolve({editor1: editor1, editor2: editor2})
 
