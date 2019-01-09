@@ -1,3 +1,7 @@
+## 1.6.0 - 2019-XX-XX
+* Added ability to disable automatic diff #139
+* Fixed bug where toggling "Ignore Whitespace" from Atom settings didn't update the checkbox in the footer UI
+
 ## 1.5.4 - 2019-01-08
 * Fixed bug with setting the grammar for second editor #151 - thanks hSaria!
 

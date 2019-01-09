@@ -1,41 +1,47 @@
 module.exports =
+  autoDiff:
+    title: 'Auto Diff'
+    description: 'Automatically recalculates the diff when one of the editors changes.'
+    type: 'boolean'
+    default: true
+    order: 1
   diffWords:
     title: 'Show Word Diff'
     description: 'Diffs the words between each line when this box is checked.'
     type: 'boolean'
     default: true
-    order: 1
+    order: 2
   ignoreWhitespace:
     title: 'Ignore Whitespace'
     description: 'Will not diff whitespace when this box is checked.'
     type: 'boolean'
     default: false
-    order: 2
+    order: 3
   turnOffSoftWrap:
-    title: 'Turn Off Soft Wrap'
-    description: 'Turns off soft wrap during diff - restores when finished.'
+    title: 'Remove Soft Wrap'
+    description: 'Removes soft wrap during diff - restores when finished.'
     type: 'boolean'
     default: false
-    order: 3
+    order: 4
   muteNotifications:
     title: 'Mute Notifications'
     description: 'Mutes all warning notifications when this box is checked.'
     type: 'boolean'
     default: false
-    order: 4
+    order: 5
   hideDocks:
     title: 'Hide Docks'
     description: 'Hides all docks (Tree View, Github, etc) during diff - shows when finished.'
     type: 'boolean'
     default: false
-    order: 5
+    order: 6
   scrollSyncType:
     title: 'Sync Scrolling'
     description: 'Syncs the scrolling of the editors.'
     type: 'string'
     default: 'Vertical + Horizontal'
     enum: ['Vertical + Horizontal', 'Vertical', 'None']
-    order: 6
+    order: 7
   colors:
     type: 'object'
     properties:

@@ -12,6 +12,8 @@ module.exports = SplitDiff =
   config: configSchema
   subscriptions: null
   editorSubscriptions: null
+  lineEndingSubscription: null
+  contextMenuSubscriptions: null
   isEnabled: false
   wasEditor1Created: false
   wasEditor2Created: false
@@ -76,7 +78,8 @@ module.exports = SplitDiff =
         if @isEnabled
           @copyToLeft()
       'split-diff:disable': => @disable()
-      'split-diff:ignore-whitespace': => @toggleIgnoreWhitespace()
+      'split-diff:set-ignore-whitespace': => @toggleIgnoreWhitespace()
+      'split-diff:set-auto-diff': => @toggleAutoDiff()
       'split-diff:toggle': => @toggle()
 
   deactivate: ->
@@ -100,6 +103,12 @@ module.exports = SplitDiff =
     if @editorSubscriptions?
       @editorSubscriptions.dispose()
       @editorSubscriptions = null
+    if @contextMenuSubscriptions?
+      @contextMenuSubscriptions.dispose()
+      @contextMenuSubscriptions = null
+    if @lineEndingSubscription?
+      @lineEndingSubscription.dispose()
+      @lineEndingSubscription = null
 
     if @diffView?
       if @wasEditor1Created
@@ -143,13 +152,21 @@ module.exports = SplitDiff =
     @wasEditor2SoftWrapped = false
     @hasGitRepo = false
 
-  # called by "toggle ignore whitespace" command
+  # called by "ignore whitespace toggle" command
   toggleIgnoreWhitespace: ->
     # if ignoreWhitespace is not being overridden
     if !(@options.ignoreWhitespace?)
       ignoreWhitespace = @_getConfig('ignoreWhitespace')
       @_setConfig('ignoreWhitespace', !ignoreWhitespace)
       @footerView?.setIgnoreWhitespace(!ignoreWhitespace)
+
+  # called by "auto diff toggle" command
+  toggleAutoDiff: ->
+    # if ignoreWhitespace is not being overridden
+    if !(@options.autoDiff?)
+      autoDiff = @_getConfig('autoDiff')
+      @_setConfig('autoDiff', !autoDiff)
+      @footerView?.setAutoDiff(!autoDiff)
 
   # called by "Move to next diff" command
   nextDiff: ->
@@ -213,33 +230,17 @@ module.exports = SplitDiff =
       if editors == null
         return
       @editorSubscriptions = new CompositeDisposable()
-      @_setupVisibleEditors(editors.editor1, editors.editor2)
+      @_setupVisibleEditors(editors)
       @diffView = new DiffView(editors)
 
       # add listeners
-      @editorSubscriptions.add editors.editor1.onDidStopChanging =>
-        @updateDiff(editors)
-      @editorSubscriptions.add editors.editor2.onDidStopChanging =>
-        @updateDiff(editors)
-      @editorSubscriptions.add editors.editor1.onDidDestroy =>
-        @disable()
-      @editorSubscriptions.add editors.editor2.onDidDestroy =>
-        @disable()
-      @editorSubscriptions.add atom.config.onDidChange 'split-diff', () =>
-        @updateDiff(editors)
-      @editorSubscriptions.add editors.editor1.onDidChangeCursorPosition (event) =>
-        @diffView.handleCursorChange(event.cursor, event.oldBufferPosition, event.newBufferPosition)
-      @editorSubscriptions.add editors.editor2.onDidChangeCursorPosition (event) =>
-        @diffView.handleCursorChange(event.cursor, event.oldBufferPosition, event.newBufferPosition)
-      @editorSubscriptions.add editors.editor1.onDidAddCursor (cursor) =>
-        @diffView.handleCursorChange(cursor, -1, cursor.getBufferPosition())
-      @editorSubscriptions.add editors.editor2.onDidAddCursor (cursor) =>
-        @diffView.handleCursorChange(cursor, -1, cursor.getBufferPosition())
+      @_setupEditorSubscriptions(editors)
 
       # add the bottom UI panel
       if !@footerView?
         ignoreWhitespace = @options.ignoreWhitespace ? @_getConfig('ignoreWhitespace')
-        @footerView = new FooterView(ignoreWhitespace, (@options.ignoreWhitespace?))
+        autoDiff = @options.autoDiff ? @_getConfig('autoDiff')
+        @footerView = new FooterView(ignoreWhitespace, @options.ignoreWhitespace?, autoDiff, @options.autoDiff?)
         @footerView.createPanel()
       @footerView.show()
 
@@ -258,7 +259,8 @@ module.exports = SplitDiff =
         @updateDiff(editors)
 
       # add application menu items
-      @editorSubscriptions.add atom.menu.add [
+      @contextMenuSubscriptions = new CompositeDisposable()
+      @contextMenuSubscriptions.add atom.menu.add [
         {
           'label': 'Packages'
           'submenu': [
@@ -273,7 +275,7 @@ module.exports = SplitDiff =
           ]
         }
       ]
-      @editorSubscriptions.add atom.contextMenu.add {
+      @contextMenuSubscriptions.add atom.contextMenu.add {
         'atom-text-editor': [{
           'label': 'Split Diff',
           'submenu': [
@@ -436,53 +438,91 @@ module.exports = SplitDiff =
 
     return Promise.resolve(null)
 
-  _setupVisibleEditors: (editor1, editor2) ->
+  # sets up any editor listeners
+  _setupEditorSubscriptions: (editors) ->
+    @editorSubscriptions?.dispose()
+    @editorSubscriptions = null
+    @editorSubscriptions = new CompositeDisposable()
+
+    # add listeners
+    autoDiff = @options.autoDiff ? @_getConfig('autoDiff')
+    if autoDiff
+      @editorSubscriptions.add editors.editor1.onDidStopChanging =>
+        @updateDiff(editors)
+      @editorSubscriptions.add editors.editor2.onDidStopChanging =>
+        @updateDiff(editors)
+    @editorSubscriptions.add editors.editor1.onDidDestroy =>
+      @disable()
+    @editorSubscriptions.add editors.editor2.onDidDestroy =>
+      @disable()
+    @editorSubscriptions.add atom.config.onDidChange 'split-diff', (event) =>
+      # need to redo editor subscriptions because some settings affect the listeners themselves
+      @_setupEditorSubscriptions(editors)
+
+      # update footer view ignore whitespace checkbox if setting has changed
+      if event.newValue.ignoreWhitespace != event.oldValue.ignoreWhitespace
+        @footerView?.setIgnoreWhitespace(event.newValue.ignoreWhitespace)
+      if event.newValue.autoDiff != event.oldValue.autoDiff
+        @footerView?.setAutoDiff(event.newValue.autoDiff)
+
+      @updateDiff(editors)
+    @editorSubscriptions.add editors.editor1.onDidChangeCursorPosition (event) =>
+      @diffView.handleCursorChange(event.cursor, event.oldBufferPosition, event.newBufferPosition)
+    @editorSubscriptions.add editors.editor2.onDidChangeCursorPosition (event) =>
+      @diffView.handleCursorChange(event.cursor, event.oldBufferPosition, event.newBufferPosition)
+    @editorSubscriptions.add editors.editor1.onDidAddCursor (cursor) =>
+      @diffView.handleCursorChange(cursor, -1, cursor.getBufferPosition())
+    @editorSubscriptions.add editors.editor2.onDidAddCursor (cursor) =>
+      @diffView.handleCursorChange(cursor, -1, cursor.getBufferPosition())
+
+  _setupVisibleEditors: (editors) ->
     BufferExtender = require './buffer-extender'
-    buffer1LineEnding = (new BufferExtender(editor1.getBuffer())).getLineEnding()
+    buffer1LineEnding = (new BufferExtender(editors.editor1.getBuffer())).getLineEnding()
 
     if @wasEditor2Created
       # want to scroll a newly created editor to the first editor's position
-      atom.views.getView(editor1).focus()
+      atom.views.getView(editors.editor1).focus()
       # set the preferred line ending before inserting text #39
       if buffer1LineEnding == '\n' || buffer1LineEnding == '\r\n'
-        @editorSubscriptions.add editor2.onWillInsertText () ->
-          editor2.getBuffer().setPreferredLineEnding(buffer1LineEnding)
+        @lineEndingSubscription = new CompositeDisposable()
+        @lineEndingSubscription.add editors.editor2.onWillInsertText () ->
+          editors.editor2.getBuffer().setPreferredLineEnding(buffer1LineEnding)
 
-    @_setupGitRepo(editor1, editor2)
+    @_setupGitRepo(editors)
 
     # unfold all lines so diffs properly align
-    editor1.unfoldAll()
-    editor2.unfoldAll()
+    editors.editor1.unfoldAll()
+    editors.editor2.unfoldAll()
 
     muteNotifications = @options.muteNotifications ? @_getConfig('muteNotifications')
     turnOffSoftWrap = @options.turnOffSoftWrap ? @_getConfig('turnOffSoftWrap')
     if turnOffSoftWrap
       shouldNotify = false
-      if editor1.isSoftWrapped()
+      if editors.editor1.isSoftWrapped()
         @wasEditor1SoftWrapped = true
-        editor1.setSoftWrapped(false)
+        editors.editor1.setSoftWrapped(false)
         shouldNotify = true
-      if editor2.isSoftWrapped()
+      if editors.editor2.isSoftWrapped()
         @wasEditor2SoftWrapped = true
-        editor2.setSoftWrapped(false)
+        editors.editor2.setSoftWrapped(false)
         shouldNotify = true
       if shouldNotify && !muteNotifications
         softWrapMsg = 'Soft wrap automatically disabled so lines remain in sync.'
         atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
-    else if !muteNotifications && (editor1.isSoftWrapped() || editor2.isSoftWrapped())
+    else if !muteNotifications && (editors.editor1.isSoftWrapped() || editors.editor2.isSoftWrapped())
       softWrapMsg = 'Warning: Soft wrap enabled! Lines may not align.\n(Try "Turn Off Soft Wrap" setting)'
       atom.notifications.addWarning('Split Diff', {detail: softWrapMsg, dismissable: false, icon: 'diff'})
 
-    buffer2LineEnding = (new BufferExtender(editor2.getBuffer())).getLineEnding()
-    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding) && editor1.getLineCount() != 1 && editor2.getLineCount() != 1 && !muteNotifications
+    buffer2LineEnding = (new BufferExtender(editors.editor2.getBuffer())).getLineEnding()
+    if buffer2LineEnding != '' && (buffer1LineEnding != buffer2LineEnding) && editors.editor1.getLineCount() != 1 && editors.editor2.getLineCount() != 1 && !muteNotifications
       # pop warning if the line endings differ and we haven't done anything about it
       lineEndingMsg = 'Warning: Line endings differ!'
       atom.notifications.addWarning('Split Diff', {detail: lineEndingMsg, dismissable: false, icon: 'diff'})
 
-  _setupGitRepo: (editor1, editor2) ->
-    editor1Path = editor1.getPath()
+  _setupGitRepo: (editors) ->
+    editor1Path = editors.editor1.getPath()
     # only show git changes if the right editor is empty
-    if editor1Path? && (editor2.getLineCount() == 1 && editor2.lineTextForBufferRow(0) == '')
+    if editor1Path? && (editors.editor2.getLineCount() == 1 && editors.editor2.lineTextForBufferRow(0) == '')
       for directory, i in atom.project.getDirectories()
         if editor1Path is directory.getPath() or directory.contains(editor1Path)
           projectRepo = atom.project.getRepositories()[i]
@@ -491,8 +531,8 @@ module.exports = SplitDiff =
             relativeEditor1Path = projectRepo.relativize(editor1Path)
             gitHeadText = projectRepo.getHeadBlob(relativeEditor1Path)
             if gitHeadText?
-              editor2.selectAll()
-              editor2.insertText(gitHeadText)
+              editors.editor2.selectAll()
+              editors.editor2.insertText(gitHeadText)
               @hasGitRepo = true
               break
 

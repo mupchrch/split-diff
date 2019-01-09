@@ -1,6 +1,6 @@
 module.exports =
 class FooterView
-  constructor: (isWhitespaceIgnored, disableIgnoreWhitespace) ->
+  constructor: (isWhitespaceIgnored, disableIgnoreWhitespace, isAutoDiffEnabled, disableAutoDiff) ->
     # create root UI element
     @element = document.createElement('div')
     @element.classList.add('split-diff-ui')
@@ -112,19 +112,40 @@ class FooterView
     @ignoreWhitespaceValue.disabled = disableIgnoreWhitespace
     # register command to checkbox
     @ignoreWhitespaceValue.addEventListener('change', () ->
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:ignore-whitespace')
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:set-ignore-whitespace')
     )
     # create ignore whitespace label
     ignoreWhitespaceLabel = document.createElement('label')
     ignoreWhitespaceLabel.classList.add('ignore-whitespace-label')
     ignoreWhitespaceLabel.htmlFor = 'ignore-whitespace-checkbox'
     ignoreWhitespaceLabel.textContent = 'Ignore Whitespace'
+
+    # create ignore whitespace checkbox
+    @autoDiffValue = document.createElement('input')
+    @autoDiffValue.type = 'checkbox'
+    @autoDiffValue.id = 'auto-diff-checkbox'
+    # set checkbox value to current package ignore whitespace setting
+    @autoDiffValue.checked = isAutoDiffEnabled
+    # set checkbox to disabled if service is overriding
+    @autoDiffValue.disabled = disableAutoDiff
+    # register command to checkbox
+    @autoDiffValue.addEventListener('change', () ->
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'split-diff:set-auto-diff')
+    )
+    # create ignore whitespace label
+    autoDiffLabel = document.createElement('label')
+    autoDiffLabel.classList.add('auto-diff-label')
+    autoDiffLabel.htmlFor = 'auto-diff-checkbox'
+    autoDiffLabel.textContent = 'Auto Diff'
+
     # create right column
     right = document.createElement('div')
     right.classList.add('right')
     # add items to container
     right.appendChild(@ignoreWhitespaceValue)
     right.appendChild(ignoreWhitespaceLabel)
+    right.appendChild(@autoDiffValue)
+    right.appendChild(autoDiffLabel)
     # add settings to UI
     @element.appendChild(right)
 
@@ -166,3 +187,7 @@ class FooterView
   # set the state of the ignore whitespace checkbox
   setIgnoreWhitespace: (isWhitespaceIgnored) ->
     @ignoreWhitespaceValue.checked = isWhitespaceIgnored
+
+  # set the state of the auto diff checkbox
+  setAutoDiff: (isAutoDiffEnabled) ->
+    @autoDiffValue.checked = isAutoDiffEnabled

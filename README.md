@@ -6,6 +6,10 @@ Diffs text between two split panes. New panes are created if less than two panes
 
 ![split-diff in action](https://github.com/mupchrch/split-diff/raw/master/demo.gif)
 
+## Minimap Plugin
+
+Get the [split-diff minimap plugin](https://atom.io/packages/minimap-split-diff) to make it easier to spot differences.
+
 ## Usage
 
 ### Commands
@@ -17,7 +21,8 @@ You can call any of these commands from your own custom keybinding, simply overr
 | Toggle `split-diff:toggle` | Toggles a diff of the text between two side-by-side panes. Creates panes as necessary. Displays git changes if there is a repository found. | `ctrl-alt-t`,<br>`ctrl-alt-d` (_linux_) |
 | Enable `split-diff:enable` | Enables a diff of the text between two side-by-side panes. Creates panes as necessary. Displays git changes if there is a repository found. | ... |
 | Disable `split-diff:disable` | Disables a diff. Removes any panes that were created by this package. | ... |
-| Ignore Whitespace `split-diff:ignore-whitespace` | Toggles the Ignore Whitespace setting. | ... |
+| Set Ignore Whitespace `split-diff:set-ignore-whitespace` | Toggles the Ignore Whitespace setting. | ... |
+| Set Auto Diff `split-diff:set-auto-diff` | Toggles the Auto Diff setting. | ... |
 | Move to Next Diff `split-diff:next-diff` | Highlights the next difference. Moves the cursor so it can be easily copied. | `ctrl-alt-n` |
 | Move to Previous Diff `split-diff:prev-diff` | Highlights the previous difference. Moves the cursor so it can be easily copied. | `ctrl-alt-p` |
 | Copy to Right `split-diff:copy-to-right` | Copies all differences containing a cursor to the right pane. | `ctrl-alt-.` |
@@ -25,11 +30,12 @@ You can call any of these commands from your own custom keybinding, simply overr
 
 ### Settings
 
+* **Auto Diff** - Automatically recalculates the diff when one of the editors changes.
 * **Show Word Diff** - Diffs the words between each line when this box is checked.
 * **Ignore Whitespace** - Will not diff whitespace when this box is checked.
 * **Mute Notifications** - Mutes all warning notifications when this box is checked.
-* **Turn Off Soft Wrap** - Automatically turns off soft wrap during diff. Restores on disable.
-* **Hide Docks** - Automatically hides all docks during diff (Tree View, Github, etc). Re-shows on disable.
+* **Remove Soft Wrap** - Removes soft wrap during diff - restores when finished.
+* **Hide Docks** - Hides all docks (Tree View, Github, etc) during diff - shows when finished.
 * **Sync Scrolling** - Syncs the scrolling of the editors.
 #### Colors
 * **Added Color Side** - Which editor (left or right) to highlight as added. The opposite editor will be highlighted as removed.
@@ -60,7 +66,3 @@ diffEditors(editor1, editor2, options);
  */
 disable();
 ```
-
-## Minimap Plugin
-
-Get the [split-diff minimap plugin](https://atom.io/packages/minimap-split-diff) to make it easier to spot differences!
