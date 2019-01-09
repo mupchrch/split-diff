@@ -1,5 +1,5 @@
 ## 1.5.4 - 2019-01-08
-* Fixed bug with setting the grammar for second editor #151
+* Fixed bug with setting the grammar for second editor #151 - thanks hSaria!
 
 ## 1.5.3 - 2018-10-10
 * Fixed syntax highlighting not working for automatically opened editors #141
