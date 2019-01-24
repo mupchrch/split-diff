@@ -46,7 +46,7 @@ class FooterView
     # create number of differences value
     @numDifferencesValue = document.createElement('span')
     @numDifferencesValue.classList.add('num-diff-value')
-    @numDifferencesValue.textContent = '...'
+    @numDifferencesValue.classList.add('split-diff-loading-icon')
     # create number of differences text
     @numDifferencesText = document.createElement('span')
     @numDifferencesText.textContent = 'differences'
@@ -166,8 +166,13 @@ class FooterView
   hide: ->
     @footerPanel.hide()
 
+  setLoading: ->
+    @numDifferencesValue.textContent = null
+    @numDifferencesValue.classList.add('split-diff-loading-icon')
+
   # set the number of differences value
   setNumDifferences: (num) ->
+    @numDifferencesValue.classList.remove('split-diff-loading-icon')
     if num == 1
       @numDifferencesText.textContent = 'difference'
     else

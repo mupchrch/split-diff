@@ -32,42 +32,14 @@ atom-text-editor {
   }
 }
 
-/* loading modal */
-@keyframes delay-modal {
-  0% {
-    opacity: 0;
-  }
-  99% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-// animation needs to be on the outer modal element and not its contents
-.split-diff-hide-mask {
-  animation: delay-modal 1s forwards;
-}
-
-.split-diff-modal {
-  padding: 14px;
-  text-align: center;
-}
-
-.split-diff-message {
-  font-size: 26px;
-  display: inline-block;
-}
-
 @spinner-duration: 1.2s;
 @spinner-color: mix( hsv( 220, 100%, 66%), hsl( 220, 100%, 70%), luma( hsl(220, 50%, 50%) ) );
-.split-diff-icon {
+.split-diff-loading-icon {
   position: relative;
   display: inline-block;
   width: 1em;
   height: 1em;
-  font-size: 48px;
+  vertical-align: middle;
   background: radial-gradient(@spinner-color .1em, transparent .11em);
 
   &::before,
@@ -98,10 +70,6 @@ atom-text-editor {
     0% { transform: rotateZ(  0deg); -webkit-animation-timing-function: cubic-bezier(0, 0, .8, .2); }
    50% { transform: rotateZ(180deg); -webkit-animation-timing-function: cubic-bezier(.2, .8, 1, 1); }
   100% { transform: rotateZ(360deg); }
-}
-
-.split-diff-hide-mask:after {
-  display: none;
 }
 
 /* bottom panel UI */

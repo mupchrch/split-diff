@@ -1,6 +1,5 @@
 {CompositeDisposable, Directory, File} = require 'atom'
 DiffView = require './diff-view'
-LoadingView = require './ui/loading-view'
 FooterView = require './ui/footer-view'
 SyncScroll = require './sync-scroll'
 StyleCalculator = require './style-calculator'
@@ -126,9 +125,6 @@ module.exports = SplitDiff =
     if @footerView?
       @footerView.destroy()
       @footerView = null
-    if @loadingView?
-      @loadingView.destroy()
-      @loadingView = null
 
     if @syncScroll?
       @syncScroll.dispose()
@@ -298,14 +294,18 @@ module.exports = SplitDiff =
       @process.kill()
       @process = null
 
+    # force softwrap to be off if it somehow turned back on #143
+    turnOffSoftWrap = @options.turnOffSoftWrap ? @_getConfig('turnOffSoftWrap')
+    if turnOffSoftWrap
+      if editors.editor1.isSoftWrapped()
+        editors.editor1.setSoftWrapped(false)
+      if editors.editor2.isSoftWrapped()
+        editors.editor2.setSoftWrapped(false)
+
     ignoreWhitespace = @options.ignoreWhitespace ? @_getConfig('ignoreWhitespace')
     editorPaths = @_createTempFiles(editors)
 
-    # create the loading view if it doesn't exist yet
-    if !@loadingView?
-      @loadingView = new LoadingView()
-      @loadingView.createModal()
-    @loadingView.show()
+    @footerView?.setLoading()
 
     # --- kick off background process to compute diff ---
     {BufferedNodeProcess} = require 'atom'
@@ -317,13 +317,10 @@ module.exports = SplitDiff =
       computedDiff = JSON.parse(output)
       @process.kill()
       @process = null
-      @loadingView?.hide()
       @_resumeUpdateDiff(editors, computedDiff)
     stderr = (err) =>
       theOutput = err
     exit = (code) =>
-      @loadingView?.hide()
-
       if code != 0
         console.log('BufferedNodeProcess code was ' + code)
         console.log(theOutput)
@@ -425,9 +422,10 @@ module.exports = SplitDiff =
         editor2Promise = atom.workspace.openURIInPane(filePath, rightPane)
 
         return editor2Promise.then (editor2) ->
+          editor2.getBuffer().setLanguageMode(atom.grammars.languageModeForGrammarAndBuffer(editor1.getGrammar(), editor2.getBuffer()))
           return {editor1: editor1, editor2: editor2}
       else if editorWithoutPath
-        editor2 = editorWithoutPath.copy()
+        editor2 = atom.workspace.buildTextEditor({autoHeight: false})
         rightPane.addItem(editor2)
 
         return Promise.resolve({editor1: editor1, editor2: editor2})

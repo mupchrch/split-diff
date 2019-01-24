@@ -1,6 +1,10 @@
-## 1.6.0 - 2019-XX-XX
+## 1.6.0 - 2019-01-24
 * Added ability to disable automatic diff #139
-* Fixed bug where toggling "Ignore Whitespace" from Atom settings didn't update the checkbox in the footer UI
+* Changed loading indicator to appear in footer UI instead of as a modal that covered both editors #149
+* Fixed toggling "Ignore Whitespace" from Atom settings didn't update the checkbox in the footer UI
+* Fixed "Diff with Active File" not highlighting syntax in newly created tab (missed part of #151)
+* Fixed "Diff with Active File" of new, unsaved tab creating a new tab with editor hooked up to shared text buffer #160
+* Fixed "Remove Soft Wrap" setting not working for quick git diff #143
 
 ## 1.5.4 - 2019-01-08
 * Fixed bug with setting the grammar for second editor #151 - thanks hSaria!
