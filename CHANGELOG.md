@@ -1,3 +1,6 @@
+## 1.6.1 - 2019-09-27
+* Fixed "Diff with Active File" opens blank document #165
+
 ## 1.6.0 - 2019-01-24
 * Added ability to disable automatic diff #139
 * Changed loading indicator to appear in footer UI instead of as a modal that covered both editors #149

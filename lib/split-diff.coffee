@@ -425,10 +425,8 @@ module.exports = SplitDiff =
           editor2.getBuffer().setLanguageMode(atom.grammars.languageModeForGrammarAndBuffer(editor1.getGrammar(), editor2.getBuffer()))
           return {editor1: editor1, editor2: editor2}
       else if editorWithoutPath
-        editor2 = atom.workspace.buildTextEditor({autoHeight: false})
-        rightPane.addItem(editor2)
-
-        return Promise.resolve({editor1: editor1, editor2: editor2})
+        rightPane.addItem(editorWithoutPath)
+        return Promise.resolve({editor1: editor1, editor2: editorWithoutPath})
     else
       noActiveEditorMsg = 'No active file found! (Try focusing a text editor)'
       atom.notifications.addWarning('Split Diff', {detail: noActiveEditorMsg, dismissable: false, icon: 'diff'})
